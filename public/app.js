@@ -220,6 +220,12 @@
         'La base de conocimiento deriva sumas, restas, constantes por funciones y ' +
         'x^n, K/x^n, sen, cos, tan, ln, e^x y √ aplicadas directamente a la variable ' +
         '(sin regla del producto ni de la cadena: sen(2x) o x·sen(x) no se pueden derivar).'));
+    } else if (/^No hay regla para integrar/.test(message || '')) {
+      // Same limits in prolog/integrales.pl: linearity plus elementary forms.
+      resultBox.appendChild(el('p', 'note',
+        'La base de conocimiento integra sumas, restas, constantes por funciones y ' +
+        'x^n, K/x^n, sen, cos, sec², ln, e^x y √ aplicadas directamente a la variable ' +
+        '(sin integración por partes ni sustitución: sen(2x) o x·sen(x) no se pueden integrar).'));
     }
     if (request) resultBox.appendChild(prologDetails(request, null));
   }
