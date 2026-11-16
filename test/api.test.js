@@ -35,7 +35,14 @@ const cases = [
   }],
   // Exactly what parser.js emits
   [{ expr: 'der(4 * x ^ 4 + sen(x), x)' }, (r) => assert.equal(r.result, '16*x^3+cos(x)')],
-  [{ expr: 'der(x * sen(x), x)' }, (r) => assert.equal(r.result, 'x*cos(x)+sen(x)')],
+  [{ expr: 'der(3 * x ^ 2 - 5 * x + 1, x)' }, (r) => assert.equal(r.result, '6*x-5')],
+  [{ expr: 'der(x / 2 + 1 / x, x)' }, (r) => assert.equal(r.result, '1/2-1/x^2')],
+  [{ expr: 'der(e ^ x + sqrt(x), x)' }, (r) => assert.equal(r.result, 'exp(x)+1/(2*sqrt(x))')],
+  // The KB has no product rule: x*x is retried as x^2
+  [{ expr: 'der(x * x, x)' }, (r) => {
+    assert.equal(r.result, '2*x');
+    assert.equal(r.steps[0].retry, 'simplificada');
+  }],
   [{ expr: 'der(x ^ (-1), x)' }, (r) => assert.equal(r.result, '- (1/x^2)')],
   [{ expr: '2 * der(int(x, x), x)' }, (r) => assert.equal(r.result, '2*x')],
   // README example

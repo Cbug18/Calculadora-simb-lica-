@@ -31,7 +31,17 @@
 :- ensure_loaded(integrales).
 :- ensure_loaded(simplificador).
 
-:- initialization(main, main).
+% Solo atiende peticiones cuando main.pl es el script (swipl prolog/main.pl);
+% si lo carga otro fichero (p. ej. los tests) no se queda leyendo la entrada.
+:- initialization(iniciar, main).
+
+iniciar :-
+    ( es_el_script -> main ; true ).
+
+es_el_script :-
+    current_prolog_flag(os_argv, Argumentos),
+    member(A, Argumentos),
+    file_base_name(A, 'main.pl'), !.
 
 limite_segundos(5).
 limite_caracteres(1000).
