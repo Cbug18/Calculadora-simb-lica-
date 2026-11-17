@@ -80,6 +80,18 @@ s(Var, cos(Var), sen(Var)):-
 s(Var, sec(Var)^2, tan(Var)):-
     atomic(Var), !.
 
+s(Var, tan(Var), -log(abs(cos(Var)))):-
+    atomic(Var), !.
+
+s(Var, cot(Var), log(abs(sen(Var)))):-
+    atomic(Var), !.
+
+s(Var, sec(Var), log(abs(sec(Var) + tan(Var)))):-
+    atomic(Var), !.
+
+s(Var, csc(Var), -log(abs(csc(Var) + cot(Var)))):-
+    atomic(Var), !.
+
 s(Var, exp(Var), exp(Var)):-
     atomic(Var), !.
 
@@ -165,6 +177,18 @@ s(Var, cos(F), sen(Var)):-
     var(Var), F == Var, !.
 
 s(Var, sec(F)^2, tan(Var)):-
+    var(Var), F == Var, !.
+
+s(Var, tan(F), -log(abs(cos(Var)))):-
+    var(Var), F == Var, !.
+
+s(Var, cot(F), log(abs(sen(Var)))):-
+    var(Var), F == Var, !.
+
+s(Var, sec(F), log(abs(sec(Var) + tan(Var)))):-
+    var(Var), F == Var, !.
+
+s(Var, csc(F), -log(abs(csc(Var) + cot(Var)))):-
     var(Var), F == Var, !.
 
 s(Var, exp(F), exp(Var)):-
