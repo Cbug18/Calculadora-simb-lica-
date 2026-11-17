@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calculadora Prolog</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>∫</text></svg>" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="top">
+      <div>
+        <h1>Calculadora Prolog</h1>
+        <p class="sub">Derivadas, integrales y simplificación simbólica con una base de conocimiento en Prolog</p>
+      </div>
+      <span id="status" class="status">verificando Prolog…</span>
+    </header>
+
+    <section class="card">
+      <div class="preview" id="preview" aria-live="polite"></div>
+
+      <input id="expr" type="text" autocomplete="off" spellcheck="false"
+             placeholder="ej. der(x^3, x) + int(2x, x, 0, 1)" value="der(4*x^4 + sen(x), x)" />
+
+      <div class="options">
+        <label>Evaluar el resultado en
+          <input id="evar" class="short" type="text" value="x" maxlength="8" /> =
+          <input id="eat" type="text" placeholder="opcional, ej. 2 o pi/2" />
+        </label>
+      </div>
+
+      <div class="keypad" id="keypad"></div>
+
+      <p class="help">
+        <code>der(f, x)</code> derivada · <code>int(f, x)</code> integral indefinida ·
+        <code>int(f, x, a, b)</code> integral definida. Se pueden combinar y anidar,
+        ej. <code>der(x^3, x) + int(sen(x), x, 0, pi)</code>.
+      </p>
+    </section>
+
+    <section id="result" class="card result hidden"></section>
+
+    <section class="card history-card">
+      <h2>Historial</h2>
+      <ul id="history" class="history"><li class="empty">Aún no hay cálculos.</li></ul>
+    </section>
+  </main>
+
+  <script src="parser.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
