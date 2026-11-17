@@ -30,7 +30,7 @@ s(Var, Var, 1/2*Var^2):-
 
 % [AGREGADO] Integral de x^-1 = log(x)  (debe ir antes de la regla de x^N):
 
-s(Var, Var^N, log(Var)):-
+s(Var, Var^N, log(abs(Var))):-
     atomic(Var), number(N), N =:= -1, !.
 
 
@@ -49,13 +49,13 @@ s(Var, K*Var^N, K/M*Var^M):-
 
 % [AGREGADO] Integral de K/x = K*log(x):
 
-s(Var, K/Var, K*log(Var)):-
+s(Var, K/Var, K*log(abs(Var))):-
     atomic(Var), libre_de(K, Var), !.
 
 
 % [AGREGADO] Integral de K/x^N  (K/x^N = K*x^-N):
 
-s(Var, K/Var^N, K*log(Var)):-
+s(Var, K/Var^N, K*log(abs(Var))):-
     atomic(Var), number(N), N =:= 1, libre_de(K, Var), !.
 
 s(Var, K/Var^N, K/M*Var^M):-
