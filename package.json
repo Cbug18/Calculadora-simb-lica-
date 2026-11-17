@@ -6,7 +6,8 @@
   "private": true,
   "scripts": {
     "start": "node server.js",
-    "test": "node test/parser.test.js && node test/api.test.js"
+    "test": "node test/parser.test.js && node test/api.test.js && npm run test:prolog",
+    "test:prolog": "swipl -g run_tests -t halt test/derivadas_test.pl test/integrales_test.pl test/simplificador_test.pl test/main_test.pl"
   },
   "dependencies": {
     "express": "^4.21.2"

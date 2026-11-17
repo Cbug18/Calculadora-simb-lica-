@@ -42,8 +42,80 @@ test(negativo) :- d(x, -x^2, D), assertion(D == -(2*x^1)).
 test(suma) :- d(x, x^3+x, 3*x^2+1).
 test(resta) :- d(x, x^3-x, 3*x^2-1).
 test(polinomio) :- d(x, 4*x^4+sen(x), 16*x^3+cos(x)).
+test(regla_cadena) :-
+    d(x, sen(x^2), D),
+    assertion(valor(x, D, 1.3, cos(1.3^2)*2*1.3)).
+test(coseno_compuesto) :-
+    d(x, cos(2*x), D),
+    assertion(valor(x, D, 1.3, -2*sin(2.6))).
+test(cadena_log) :-
+    d(x, log(x^2+1), D),
+    assertion(valor(x, D, 1.3, 2*1.3/(1.3^2+1))).
+test(cadena_exp) :-
+    d(x, exp(3*x), D),
+    assertion(valor(x, D, 1.3, 3*exp(3.9))).
+test(cadena_potencia) :-
+    d(x, (x^2+1)^3, D),
+    assertion(valor(x, D, 1.3, 3*(1.3^2+1)^2*2*1.3)).
+test(regla_producto) :-
+    d(x, x*sen(x), D),
+    assertion(valor(x, D, 1.3, sin(1.3)+1.3*cos(1.3))).
+test(producto_triple) :-
+    d(x, x*x*x, D),
+    assertion(valor(x, D, 1.3, 3*1.3^2)).
+test(regla_cociente) :-
+    d(x, x/(x+1), D),
+    assertion(valor(x, D, 1.3, 1/(2.3^2))).
+test(cociente_funciones) :-
+    d(x, sen(x)/x, D),
+    assertion(valor(x, D, 1.3, (cos(1.3)*1.3 - sin(1.3))/1.3^2)).
+test(sec) :- d(x, sec(x), sec(x)*tan(x)).
+test(csc) :- d(x, csc(x), D), assertion(D == -csc(x)*cot(x)).
+test(cot) :- d(x, cot(x), D), assertion(D == -csc(x)^2).
+test(cadena_sec_csc_cot) :-
+    d(x, sec(2*x) + csc(x^2) + cot(3*x), D),
+    assertion(valor(x, D, 1.3,
+        2*tan(2.6)/cos(2.6) - 2*1.3*cos(1.69)/sin(1.69)^2 - 3/sin(3.9)^2)).
+test(exponente_simbolico) :-
+    d(x, x^y, D), assertion(D == y*x^(y-1)).
+test(cadena_exponente_simbolico) :-
+    d(x, (x^2+1)^a, D), assertion(D == a*(x^2+1)^(a-1)*(2*x^1+0)).
+test(exponencial_base_numero) :-
+    d(x, 2^x, D), assertion(D == 2^x*log(2)).
+test(exponencial_base_simbolica) :-
+    d(x, a^x, D), assertion(D == a^x*log(a)).
+test(cadena_exponencial_base) :-
+    d(x, 3^(x^2), D),
+    assertion(valor(x, D, 1.3, 3^(1.3^2)*log(3)*2*1.3)).
+test(senh) :- d(x, senh(x), cosh(x)).
+test(cosh) :- d(x, cosh(x), senh(x)).
+test(tanh) :- d(x, tanh(x), sech(x)^2).
+test(sech) :- d(x, sech(x), D), assertion(D == -sech(x)*tanh(x)).
+test(csch) :- d(x, csch(x), D), assertion(D == -csch(x)*coth(x)).
+test(coth) :- d(x, coth(x), D), assertion(D == -csch(x)^2).
+test(hiperbolicas_numerica) :-
+    forall(member(F, [senh(x), cosh(x), tanh(x), sech(x), csch(x), coth(x),
+                      senh(x^2), cosh(3*x), tanh(sen(x)), sech(2*x),
+                      csch(x^2), coth(x/2)]),
+           comprobar_derivada(F)).
+test(arcsen) :- d(x, arcsen(x), 1/sqrt(1-x^2)).
+test(arccos) :- d(x, arccos(x), D), assertion(D == -1/sqrt(1-x^2)).
+test(arctan) :- d(x, arctan(x), 1/(1+x^2)).
+test(trig_inversas_numerica) :-
+    forall(member(F, [arcsen(x/2), arccos(x/2), arctan(x),
+                      arcsen(x^2/4), arctan(3*x), arccos(sen(x))]),
+           comprobar_derivada(F)).
+test(arcsenh) :- d(x, arcsenh(x), 1/sqrt(x^2+1)).
+test(arccosh) :- d(x, arccosh(x), 1/sqrt(x^2-1)).
+test(arctanh) :- d(x, arctanh(x), 1/(1-x^2)).
+test(hiperbolicas_inversas_numerica) :-
+    forall(member(F, [arcsenh(x), arccosh(x), arctanh(x/2),
+                      arcsenh(x^2), arccosh(2*x), arctanh(sen(x)/2)]),
+           comprobar_derivada(F)).
+test(cadena_doble) :-
+    d(x, sen(cos(x)), D),
+    assertion(valor(x, D, 1.3, cos(cos(1.3))*(-sin(1.3)))).
 test(funcion_no_soportada, [fail]) :- d(x, desconocida(x), _).
-test(sec_no_soportada, [fail]) :- d(x, sec(x), _).
 
 % ------------------------------------------------------------------
 % Variable de Prolog sin ligar ("para evaluación"): d(X, Exp, D)
@@ -89,7 +161,19 @@ sustituir_x(x, P, P) :- !.
 sustituir_x(E, _, E) :- atomic(E), !.
 sustituir_x(sen(A), P, sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(sec(A), P, 1/cos(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(csc(A), P, 1/sin(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(cot(A), P, cos(R)/sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(ln(A), P, log(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(senh(A), P, sinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arcsen(A), P, asin(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arccos(A), P, acos(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arctan(A), P, atan(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arcsenh(A), P, asinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arccosh(A), P, acosh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arctanh(A), P, atanh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(sech(A), P, 1/cosh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(csch(A), P, 1/sinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(coth(A), P, cosh(R)/sinh(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(E, P, R) :-
     E =.. [F|Args],
     maplist([A, B]>>sustituir_x(A, P, B), Args, RArgs),
@@ -99,22 +183,7 @@ sustituir_x(E, P, R) :-
 % Pendiente (reparto de trabajo, persona 1)
 % ------------------------------------------------------------------
 
-test(regla_producto, [fixme('falta la regla del producto')]) :-
-    d(x, x*sen(x), D),
-    valor(x, D, 1.3, sin(1.3)+1.3*cos(1.3)).
-test(regla_cociente, [fixme('falta la regla del cociente')]) :-
-    d(x, x/(x+1), D),
-    valor(x, D, 1.3, 1/(2.3^2)).
-test(regla_cadena, [fixme('falta la regla de la cadena')]) :-
-    d(x, sen(x^2), D),
-    valor(x, D, 1.3, cos(1.3^2)*2*1.3).
-test(coseno_compuesto, [fixme('falta la regla de la cadena')]) :-
-    d(x, cos(2*x), D),
-    valor(x, D, 1.3, -2*sin(2.6)).
-test(exponente_simbolico, [fixme('falta x^y con exponente simbólico')]) :-
-    d(x, x^y, D), D == y*x^(y-1).
-test(sec_csc_cot, [fixme('faltan sec, csc y cot')]) :-
-    d(x, sec(x), _), d(x, csc(x), _), d(x, cot(x), _).
+
 test(evaluacion_constante, [fixme('las cláusulas para evaluación ligan la variable')]) :-
     d(X, 3*5, D), var(X), D == 0.
 test(coeficiente_simbolico_prolog, [fixme('K*X^N con K simbólico lanza un error de is/2')]) :-

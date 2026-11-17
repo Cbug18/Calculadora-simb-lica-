@@ -58,6 +58,7 @@ input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(
 .hint { font-size: .8rem; }
 
 .keypad { display: grid; grid-template-columns: repeat(6, 1fr); gap: 7px; }
+.keypad-more { margin-top: 7px; }
 .key {
   border: 1px solid var(--border); border-radius: 9px; background: var(--key); color: var(--text);
   height: 46px; font-size: 1.05rem; cursor: pointer; transition: background .1s, transform .05s;
@@ -67,7 +68,7 @@ input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(
 .key:active { transform: scale(.97); }
 .key.fn { background: var(--key-op); }
 .key.ctl { color: var(--muted); }
-.key.go { grid-column: span 3; font-size: 1.3rem; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.key.go { grid-column: span 2 font-size: 1.3rem; background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
 .key.go:hover { filter: brightness(1.08); }
 .key .katex { font-size: 1.05em; }
 

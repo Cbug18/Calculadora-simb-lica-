@@ -431,10 +431,20 @@ funcion_impar(sen).
 funcion_impar(tan).
 funcion_impar(csc).
 funcion_impar(cot).
+funcion_impar(senh).
+funcion_impar(tanh).
+funcion_impar(csch).
+funcion_impar(coth).
+funcion_impar(arcsen).
+funcion_impar(arctan).
+funcion_impar(arcsenh).
+funcion_impar(arctanh).
 
 funcion_par(cos).
 funcion_par(sec).
 funcion_par(abs).
+funcion_par(cosh).
+funcion_par(sech).
 
 % sen(-x) -> -sen(x): solo cuando el argumento es un monomio negativo.
 argumento_negativo(A, A1) :-
@@ -465,9 +475,45 @@ valor_exacto(abs, A, V) :-
     constante(A, C), V is abs(C).
 valor_exacto(abs, A, A) :-
     nonvar(A), ( A = abs(_) ; A = exp(_) ; A == pi ; A == e ).
+valor_exacto(abs, A, A) :-
+    valor_numerico(A, V), V > 0.
+valor_exacto(abs, A, -A) :-
+    valor_numerico(A, V), V < 0.
 valor_exacto(Trig, A, V) :-
     angulo_pi(A, K),
     trig_exacto(Trig, K, V).
+valor_exacto(F, A, V) :-
+    constante(A, C), rational(C),
+    exacto_nuevas(F, C, V).
+
+% Valores exactos y dominios de las hiperbólicas y las inversas.
+% (Los negativos ya los resuelve funcion_impar: arcsen(-1/2) = -arcsen(1/2).)
+exacto_nuevas(senh, 0, 0).
+exacto_nuevas(tanh, 0, 0).
+exacto_nuevas(cosh, 0, 1).
+exacto_nuevas(sech, 0, 1).
+exacto_nuevas(csch, 0, _) :-
+    throw(error_calculo("csch no está definida en 0")).
+exacto_nuevas(coth, 0, _) :-
+    throw(error_calculo("coth no está definida en 0")).
+exacto_nuevas(arcsenh, 0, 0).
+exacto_nuevas(arcsen, C, _) :-
+    abs(C) > 1, throw(error_calculo("arcsen solo está definido en [-1, 1]")).
+exacto_nuevas(arcsen, C, V) :-
+    once(( member(N/D-V, [0/1-0, 1/2-pi/6, 1/1-pi/2]), C =:= N rdiv D )).
+exacto_nuevas(arccos, C, _) :-
+    abs(C) > 1, throw(error_calculo("arccos solo está definido en [-1, 1]")).
+exacto_nuevas(arccos, C, V) :-
+    once(( member(N/D-V, [-1/1-pi, -1/2-2*pi/3, 0/1-pi/2, 1/2-pi/3, 1/1-0]),
+           C =:= N rdiv D )).
+exacto_nuevas(arctan, C, V) :-
+    once(( member(N/D-V, [0/1-0, 1/1-pi/4]), C =:= N rdiv D )).
+exacto_nuevas(arccosh, C, _) :-
+    C < 1, throw(error_calculo("arccosh solo está definido para valores >= 1")).
+exacto_nuevas(arccosh, 1, 0).
+exacto_nuevas(arctanh, C, _) :-
+    abs(C) >= 1, throw(error_calculo("arctanh solo está definido en (-1, 1)")).
+exacto_nuevas(arctanh, 0, 0).
 
 % A = K*pi con K racional.
 angulo_pi(A, K) :-
@@ -519,29 +565,80 @@ seno_semiciclo(K0, V) :-
                           1/3-sqrt(3)/2, 1/2-1]),
            K =:= N rdiv D )).
 
-% sen(A)^P / cos(A)^P -> tan(A)^P  y  cos(A)^P / sen(A)^P -> cot(A)^P.
+% Identidades de cociente dentro de un producto:
+%   tan = sen/cos    cot = cos/sen    sec = 1/cos    csc = 1/sen
+%   tanh = senh/cosh coth = cosh/senh sech = 1/cosh  csch = 1/senh
+% Las funciones derivadas (con exponente numérico) se pasan a sen y cos,
+% se juntan los exponentes y se vuelve a escribir con la función más
+% corta cuando el resultado es exactamente una de ellas:
+%   tan(x)*cos(x) -> sen(x),  sen(x)/cos(x) -> tan(x),  1/cos(x) -> sec(x).
 identidad_cociente(Fs0, Fs) :-
-    ( select(B1-P, Fs0, R1), nonvar(B1), B1 = sen(A), number(P), P > 0,
-      select(B2-Q, R1, R2), nonvar(B2), B2 = cos(A2), A2 == A,
-      number(Q), Q =:= -P ->
-        msort([tan(A)-P|R2], Fs)
-    ; select(B1-P, Fs0, R1), nonvar(B1), B1 = cos(A), number(P), P > 0,
-      select(B2-Q, R1, R2), nonvar(B2), B2 = sen(A2), A2 == A,
-      number(Q), Q =:= -P ->
-        msort([cot(A)-P|R2], Fs)
+    foldl(descomponer_factor, Fs0, [], Fs1),
+    msort(Fs1, Fs2),
+    agrupar_factores(Fs2, Fs3),
+    recomponer(Fs3, Fs).
+
+% cociente(Funcion, Seno, Coseno, ExpSeno, ExpCoseno)
+cociente(tan,  sen,  cos,   1, -1).
+cociente(cot,  sen,  cos,  -1,  1).
+cociente(sec,  sen,  cos,   0, -1).
+cociente(csc,  sen,  cos,  -1,  0).
+cociente(tanh, senh, cosh,  1, -1).
+cociente(coth, senh, cosh, -1,  1).
+cociente(sech, senh, cosh,  0, -1).
+cociente(csch, senh, cosh, -1,  0).
+
+descomponer_factor(B-P, Acc, [S-ES, C-EC|Acc]) :-
+    number(P), nonvar(B), B =.. [N, A],
+    cociente(N, NS, NC, KS, KC), !,
+    S =.. [NS, A], C =.. [NC, A],
+    ES is KS*P, EC is KC*P.
+descomponer_factor(F, Acc, [F|Acc]).
+
+% Si los exponentes de sen(A) y cos(A) son justo los de una función
+% derivada (elevada a K), se escribe esa función.
+recomponer(Fs0, Fs) :-
+    ( member(B-_, Fs0), nonvar(B), B =.. [N, A], basica(N, NS, NC),
+      exponente_basico(Fs0, NS, A, ES, R1),
+      exponente_basico(R1, NC, A, EC, R2),
+      K is max(abs(ES), abs(EC)), K > 0,
+      cociente(Nombre, NS, NC, KS, KC),
+      ES =:= KS*K, EC =:= KC*K ->
+        F =.. [Nombre, A],
+        msort([F-K|R2], Fs1),
+        recomponer(Fs1, Fs)
     ; Fs = Fs0
     ).
 
+basica(sen, sen, cos).
+basica(cos, sen, cos).
+basica(senh, senh, cosh).
+basica(cosh, senh, cosh).
+
+% Exponente numérico de Nombre(A) en la lista (0 si no está).
+exponente_basico(Fs, Nombre, A, E, Resto) :-
+    ( select(B-E0, Fs, R), nonvar(B), B =.. [Nombre, A1], A1 == A, number(E0) ->
+        E = E0, Resto = R
+    ; E = 0, Resto = Fs
+    ).
+
 % C*sen(A)^2*F + C*cos(A)^2*F -> C*F
+% C*cosh(A)^2*F - C*senh(A)^2*F -> C*F
 identidad_pitagorica(P0, P) :-
     ( select(m(C, Fs), P0, R1),
-      select(B-E, Fs, Resto), nonvar(B), B = sen(A), E == 2,
-      msort([cos(A)-2|Resto], FsCos),
-      select(m(C2, Fs2), R1, R2), Fs2 == FsCos, C2 =:= C ->
-        sumar_polinomios([m(C, Resto)], R2, P1),
+      select(B-E, Fs, Resto), nonvar(B), E == 2,
+      pitagorica(B, Otra, Signo),
+      msort([Otra-2|Resto], FsOtra),
+      select(m(C2, Fs2), R1, R2), Fs2 == FsOtra, C2 =:= Signo*C ->
+        CR is Signo*C,
+        sumar_polinomios([m(CR, Resto)], R2, P1),
         identidad_pitagorica(P1, P)
     ; P = P0
     ).
+
+% pitagorica(sen², Otra², Signo): sen² + cos² = 1, cosh² - senh² = 1.
+pitagorica(sen(A), cos(A), 1).
+pitagorica(senh(A), cosh(A), -1).
 
 % ------------------------------------------------------------------
 % Polinomio -> expresión
@@ -666,3 +763,15 @@ funcion_aritmetica(ln, X, log(X)).
 funcion_aritmetica(exp, X, exp(X)).
 funcion_aritmetica(sqrt, X, sqrt(X)).
 funcion_aritmetica(abs, X, abs(X)).
+funcion_aritmetica(senh, X, sinh(X)).
+funcion_aritmetica(cosh, X, cosh(X)).
+funcion_aritmetica(tanh, X, tanh(X)).
+funcion_aritmetica(sech, X, 1/cosh(X)).
+funcion_aritmetica(csch, X, 1/sinh(X)).
+funcion_aritmetica(coth, X, cosh(X)/sinh(X)).
+funcion_aritmetica(arcsen, X, asin(X)).
+funcion_aritmetica(arccos, X, acos(X)).
+funcion_aritmetica(arctan, X, atan(X)).
+funcion_aritmetica(arcsenh, X, asinh(X)).
+funcion_aritmetica(arccosh, X, acosh(X)).
+funcion_aritmetica(arctanh, X, atanh(X)).

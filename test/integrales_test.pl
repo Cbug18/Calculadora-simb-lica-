@@ -111,46 +111,40 @@ comprobar_integral_prolog(X, F) :-
     X = 1.3, Exacta is F,
     assertion(abs(Exacta-Aproximada) < 0.0001).
 
-% valor(Exp, Punto, Esperado): Exp vale Esperado en x = Punto.
-valor(Exp, Punto, Esperado) :-
-    en(Exp, Punto, V), E is Esperado,
-    abs(V-E) < 1.0e-9.
+% Integrales trigonométricas: la derivada numérica de la integral
+% tiene que dar la función original.
+test(tan) :- s(x, tan(x), I), assertion(I == -log(abs(cos(x)))).
+test(cot) :- s(x, cot(x), I), assertion(I == log(abs(sen(x)))).
+test(tan_variable_prolog) :-
+    s(X, tan(X), I), assertion(I == -log(abs(cos(X)))), assertion(var(X)).
+test(sec) :- s(x, sec(x), I), assertion(I == log(abs(sec(x)+tan(x)))).
+test(csc) :- s(x, csc(x), I), assertion(I == -log(abs(csc(x)+cot(x)))).
+test(trig_numerica) :-
+    forall(member(F, [tan(x), cot(x), sec(x), csc(x), 3*tan(x),
+                      tan(x)-cot(x), sec(x)+csc(x)/2]),
+           comprobar_trig(F)).
 
-% en(Exp, Punto, V): valor numérico de Exp con x = Punto.
-en(Exp, Punto, V) :-
-    sustituir_x(Exp, Punto, E),
-    V is E.
+comprobar_trig(F) :-
+    s(x, F, I),
+    en_x(I, 1.300001, I1), en_x(I, 1.299999, I2),
+    Aproximada is (I1-I2)/0.000002,
+    en_x(F, 1.3, Exacta),
+    assertion(abs(Exacta-Aproximada) < 0.0001).
 
-sustituir_x(x, P, P) :- !.
-sustituir_x(E, _, E) :- atomic(E), !.
-sustituir_x(sen(A), P, sin(R)) :- !, sustituir_x(A, P, R).
-sustituir_x(sec(A), P, 1/cos(R)) :- !, sustituir_x(A, P, R).
-sustituir_x(ln(A), P, log(R)) :- !, sustituir_x(A, P, R).
-sustituir_x(E, P, R) :-
-    E =.. [F|Args],
-    maplist([A, B]>>sustituir_x(A, P, B), Args, RArgs),
-    R =.. [F|RArgs].
+% en_x(Exp, Punto, V): valor de Exp con x = Punto (sen, sec, csc y cot
+% se pasan a sin y cos, que son los que entiende is/2).
+en_x(Exp, Punto, V) :- a_numero(Exp, Punto, A), V is A.
 
-% ------------------------------------------------------------------
-% Pendiente (fuera de la base de conocimiento actual)
-% ------------------------------------------------------------------
+a_numero(x, P, P) :- !.
+a_numero(E, _, E) :- atomic(E), !.
+a_numero(sen(A), P, sin(R)) :- !, a_numero(A, P, R).
+a_numero(sec(A), P, 1/cos(R)) :- !, a_numero(A, P, R).
+a_numero(csc(A), P, 1/sin(R)) :- !, a_numero(A, P, R).
+a_numero(cot(A), P, cos(R)/sin(R)) :- !, a_numero(A, P, R).
+a_numero(E, P, R) :-
+    E =.. [F|Args], a_numero_lista(Args, P, RArgs), R =.. [F|RArgs].
 
-test(por_partes, [fixme('falta integración por partes')]) :-
-    s(x, x*sen(x), I),
-    valor(I, 1.3, sin(1.3)-1.3*cos(1.3)).
-test(sustitucion, [fixme('falta sustitución (regla de la cadena)')]) :-
-    s(x, sen(2*x), I),
-    valor(I, 1.3, -cos(2.6)/2).
-test(exp_compuesta, [fixme('falta sustitución (regla de la cadena)')]) :-
-    s(x, exp(2*x), I),
-    valor(I, 1.3, exp(2.6)/2).
-test(inversa_desplazada, [fixme('falta 1/(x+K) = log|x+K|')]) :-
-    s(x, 1/(x+1), I),
-    valor(I, 1.3, log(2.3)).
-test(tan, [fixme('falta la integral de tan')]) :-
-    s(x, tan(x), I),
-    valor(I, 1.3, -log(abs(cos(1.3)))).
-test(exponente_simbolico, [fixme('falta x^y con exponente simbólico')]) :-
-    s(x, x^y, I), I == x^(y+1)/(y+1).
+a_numero_lista([], _, []).
+a_numero_lista([A|As], P, [B|Bs]) :- a_numero(A, P, B), a_numero_lista(As, P, Bs).
 
 :- end_tests(integrales).

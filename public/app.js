@@ -87,26 +87,70 @@
 
     ['0', '0'], ['.', '.'],
     ['AC', 'clear', 'ctl', 'borrar todo', true],
+    ['f(x)', 'more', 'ctl', 'más funciones', true],
     ['=', 'go', 'go', 'calcular', true],
   ];
 
+    // Second keypad, hidden until "f(x)" is pressed.
+  const MORE_KEYS = [
+    ['\\sec', 'sec(|)', 'fn', 'secante'],
+    ['\\csc', 'csc(|)', 'fn', 'cosecante'],
+    ['\\cot', 'cot(|)', 'fn', 'cotangente'],
+    ['\\operatorname{senh}', 'senh(|)', 'fn', 'seno hiperbólico'],
+    ['\\cosh', 'cosh(|)', 'fn', 'coseno hiperbólico'],
+    ['\\tanh', 'tanh(|)', 'fn', 'tangente hiperbólica'],
+
+    ['\\operatorname{sech}', 'sech(|)', 'fn', 'secante hiperbólica'],
+    ['\\operatorname{csch}', 'csch(|)', 'fn', 'cosecante hiperbólica'],
+    ['\\coth', 'coth(|)', 'fn', 'cotangente hiperbólica'],
+    ['\\operatorname{arcsen}', 'arcsen(|)', 'fn', 'arcoseno'],
+    ['\\arccos', 'arccos(|)', 'fn', 'arcocoseno'],
+    ['\\arctan', 'arctan(|)', 'fn', 'arcotangente'],
+
+    ['\\operatorname{arcsenh}', 'arcsenh(|)', 'fn', 'arcoseno hiperbólico'],
+    ['\\operatorname{arccosh}', 'arccosh(|)', 'fn', 'arcocoseno hiperbólico'],
+    ['\\operatorname{arctanh}', 'arctanh(|)', 'fn', 'arcotangente hiperbólica'],
+    ['a^{x}', '^(|)', 'fn', 'exponencial de base a'],
+    ['|x|', 'abs(|)', 'fn', 'valor absoluto', true],
+    ['y', 'y', 'fn', 'y'],
+  ];
+
+  function makeKey([label, action, cls, aria, plain]) {
+    const b = el('button', `key${cls ? ' ' + cls : ''}`);
+    b.type = 'button';
+    b.setAttribute('aria-label', aria || label);
+    if (plain || /^[0-9.]$/.test(label)) b.textContent = label;
+    else renderTex(b, label);
+    // Keep the focus (and cursor) in the input on desktop.
+    b.addEventListener('mousedown', (e) => e.preventDefault());
+    b.addEventListener('click', () => press(action));
+    return b;
+  }
+
   function buildKeypad() {
     const pad = $('keypad');
-    for (const [label, action, cls, aria, plain] of KEYS) {
-      const b = el('button', `key${cls ? ' ' + cls : ''}`);
-      b.type = 'button';
-      b.setAttribute('aria-label', aria || label);
-      if (plain || /^[0-9.]$/.test(label)) b.textContent = label;
-      else renderTex(b, label);
-      // Keep the focus (and cursor) in the input on desktop.
-      b.addEventListener('mousedown', (e) => e.preventDefault());
-      b.addEventListener('click', () => press(action));
-      pad.appendChild(b);
-    }
+    for (const key of KEYS) pad.appendChild(makeKey(key));
+
+    const more = el('div', 'keypad keypad-more hidden');
+    more.id = 'keypad-more';
+    for (const key of MORE_KEYS) more.appendChild(makeKey(key));
+    pad.after(more);
+
+    const toggle = pad.querySelector('[aria-label="más funciones"]');
+    toggle.setAttribute('aria-controls', 'keypad-more');
+    toggle.setAttribute('aria-expanded', 'false');
+  }
+
+  function toggleMoreKeys() {
+    const more = $('keypad-more');
+    const open = more.classList.toggle('hidden') === false;
+    $('keypad').querySelector('[aria-controls="keypad-more"]')
+      .setAttribute('aria-expanded', String(open));
   }
 
   function press(action) {
     if (action === 'go') return calculate();
+    if (action === 'more') return toggleMoreKeys();
     if (action === 'clear') {
       exprInput.value = '';
     } else if (action === 'back') {
@@ -214,18 +258,19 @@
     resultBox.className = 'card result error';
     resultBox.replaceChildren(el('p', 'msg', message || 'Error desconocido'));
     if (/^No hay regla para derivar/.test(message || '')) {
-      // The derivative KB (prolog/derivadas.pl) only has rules for elementary
-      // functions of the variable itself: no product or chain rule.
+      // prolog/derivadas.pl: product, quotient and chain rules over the
+      // elementary functions; it has no rule for f(x)^g(x) or |x|.
       resultBox.appendChild(el('p', 'note',
-        'La base de conocimiento deriva sumas, restas, constantes por funciones y ' +
-        'x^n, K/x^n, sen, cos, tan, ln, e^x y √ aplicadas directamente a la variable ' +
-        '(sin regla del producto ni de la cadena: sen(2x) o x·sen(x) no se pueden derivar).'));
+        'La base de conocimiento deriva sumas, restas, productos, cocientes y potencias, ' +
+        'con regla de la cadena, de x^n, a^x, e^x, ln, √, las trigonométricas, ' +
+        'las hiperbólicas y sus inversas. No tiene reglas para x^x ni para |x|.'));
     } else if (/^No hay regla para integrar/.test(message || '')) {
-      // Same limits in prolog/integrales.pl: linearity plus elementary forms.
+      // prolog/integrales.pl: linearity plus elementary forms of the variable.
       resultBox.appendChild(el('p', 'note',
         'La base de conocimiento integra sumas, restas, constantes por funciones y ' +
-        'x^n, K/x^n, sen, cos, sec², ln, e^x y √ aplicadas directamente a la variable ' +
-        '(sin integración por partes ni sustitución: sen(2x) o x·sen(x) no se pueden integrar).'));
+        'x^n, K/x^n, sen, cos, tan, cot, sec, csc, sec², ln, e^x y √ aplicadas directamente ' +
+        'a la variable (sin integración por partes ni sustitución: sen(2x) o x·sen(x) ' +
+        'no se pueden integrar).'));
     }
     if (request) resultBox.appendChild(prologDetails(request, null));
   }

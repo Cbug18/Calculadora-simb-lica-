@@ -13,9 +13,8 @@ test(combinada) :- calcular(der(x^3, x) + int(sen(x), x, 0, pi), 3*x^2+2).
 test(solo_simplificar) :- calcular(x*x+x*x, 2*x^2).
 test(producto_por_reintento) :- calcular(der(x*x, x), 2*x).
 test(polinomio) :- calcular(der(3*x^2-5*x+1, x), 6*x-5).
-test(regla_producto, [fixme('derivadas.pl no tiene regla del producto')]) :-
+test(regla_producto) :-
     calcular(der(x*sen(x), x), x*cos(x)+sen(x)).
-test(sin_regla_producto, [throws(error_calculo(_))]) :- calcular(der(x*sen(x), x), _).
 
 % Reintentos
 test(reintento_simplificada) :-
@@ -44,6 +43,10 @@ test(division_cero, [throws(error_calculo(_))]) :- calcular(x/0, _).
 % valida/1
 test(valida_parser) :- valida(der(4*x^4+sen(x), x) + int(x, x, 0, pi/2) - (-3)).
 test(valida_funcion, [throws(error_calculo(_))]) :- valida(foo(x)).
+test(valida_funciones_nuevas) :-
+    valida(senh(x) + cosh(x) + tanh(x) + sech(x) + csch(x) + coth(x)),
+    valida(arcsen(x) + arccos(x) + arctan(x)),
+    valida(arcsenh(x) + arccosh(x) + arctanh(x)).
 test(valida_aridad, [throws(error_calculo(_))]) :- valida(sen(x, y)).
 test(valida_der_variable, [throws(error_calculo(_))]) :- valida(der(x^2, 2)).
 test(valida_der_pi, [throws(error_calculo(_))]) :- valida(der(x^2, pi)).
