@@ -2,7 +2,7 @@
 
 % =====================================================================
 % Base de conocimiento de derivadas elementales.
-%**Integrates:**
+%**Integrantes:**
 %
 % Andrea Beatriz Orellana Jiménez 00106123
 % Pablo Enrique Vides Zavala 00080323

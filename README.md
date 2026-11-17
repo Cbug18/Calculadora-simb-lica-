@@ -1,6 +1,6 @@
 # Calculadora Prolog
 
-**Integrates:**
+**Integrantes:**
 
 * Andrea Beatriz Orellana Jiménez 00106123
 * Pablo Enrique Vides Zavala 00080323
@@ -14,6 +14,8 @@ Calculadora web de **derivadas**, **integrales** y **simplificación** simbólic
 ## Cómo ejecutarla
 
 Necesita [Node.js](https://nodejs.org) y [SWI-Prolog](https://www.swi-prolog.org/download/stable) (`swipl` tiene que estar en el PATH).
+
+Needs [Node.js](https://nodejs.org) and [SWI-Prolog](https://www.swi-prolog.org/download/stable) (`swipl` must be on the PATH).
 
 ```bash
 brew install swi-prolog   # macOS, una vez (Windows: el instalador de swi-prolog.org)
