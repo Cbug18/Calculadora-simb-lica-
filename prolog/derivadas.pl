@@ -1,3 +1,5 @@
+:- encoding(utf8).
+
 % =====================================================================
 % Base de conocimiento de derivadas elementales.
 %

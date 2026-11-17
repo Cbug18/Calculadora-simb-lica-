@@ -23,7 +23,16 @@
   // Nombres aceptados -> nombre canónico que usa la base de conocimiento.
   const FUNCS = {
     sin: 'sen', sen: 'sen', cos: 'cos', tan: 'tan', sec: 'sec', csc: 'csc',
-    cot: 'cot', log: 'log', ln: 'log', exp: 'exp', sqrt: 'sqrt', abs: 'abs',
+        cot: 'cot', log: 'log', ln: 'log', exp: 'exp', sqrt: 'sqrt', abs: 'abs',
+    // Hiperbólicas
+    senh: 'senh', sinh: 'senh', cosh: 'cosh', tanh: 'tanh',
+    sech: 'sech', csch: 'csch', coth: 'coth',
+    // Trigonométricas inversas
+    arcsen: 'arcsen', arcsin: 'arcsen', asin: 'arcsen',
+    arccos: 'arccos', acos: 'arccos', arctan: 'arctan', atan: 'arctan',
+    // Hiperbólicas inversas
+    arcsenh: 'arcsenh', arcsinh: 'arcsenh', asinh: 'arcsenh',
+    arccosh: 'arccosh', acosh: 'arccosh', arctanh: 'arctanh', atanh: 'arctanh',
     der: 'der', int: 'int',
   };
   // Aridades permitidas.
@@ -229,7 +238,18 @@
   // ------------------------------------------------------------------
   // AST -> LaTeX
   // ------------------------------------------------------------------
-  const TRIG = { sen: '\\operatorname{sen}', cos: '\\cos', tan: '\\tan', sec: '\\sec', csc: '\\csc', cot: '\\cot' };
+  // Funciones que se escriben f^2(x) cuando van elevadas: sen^2(x), cosh^2(x).
+  const TRIG = {
+    sen: '\\operatorname{sen}', cos: '\\cos', tan: '\\tan', sec: '\\sec', csc: '\\csc', cot: '\\cot',
+    senh: '\\operatorname{senh}', cosh: '\\cosh', tanh: '\\tanh',
+    sech: '\\operatorname{sech}', csch: '\\operatorname{csch}', coth: '\\coth',
+  };
+  // Inversas: (arcsen(x))^2, nunca arcsen^2(x).
+  const INVERSAS = {
+    arcsen: '\\operatorname{arcsen}', arccos: '\\arccos', arctan: '\\arctan',
+    arcsenh: '\\operatorname{arcsenh}', arccosh: '\\operatorname{arccosh}',
+    arctanh: '\\operatorname{arctanh}',
+  };
   const SYMS = { pi: '\\pi' };
 
   const isSum = (n) => n.type === 'bin' && (n.op === '+' || n.op === '-');
@@ -274,7 +294,7 @@
     if (name === 'exp') base = `e^{${a}}`;
     else if (name === 'sqrt') base = `\\sqrt{${a}}`;
     else if (name === 'abs') base = `\\left|${a}\\right|`;
-    else base = `\\operatorname{${name}}${wrapped}`;
+    else base = `${INVERSAS[name] || `\\operatorname{${name}}`}${wrapped}`;
     return power ? `${paren(base)}^{${power}}` : base;
   }
 
@@ -316,6 +336,10 @@
     sen: Math.sin, cos: Math.cos, tan: Math.tan, sec: (x) => 1 / Math.cos(x),
     csc: (x) => 1 / Math.sin(x), cot: (x) => 1 / Math.tan(x), log: Math.log,
     exp: Math.exp, sqrt: Math.sqrt, abs: Math.abs,
+    senh: Math.sinh, cosh: Math.cosh, tanh: Math.tanh, sech: (x) => 1 / Math.cosh(x),
+    csch: (x) => 1 / Math.sinh(x), coth: (x) => 1 / Math.tanh(x),
+    arcsen: Math.asin, arccos: Math.acos, arctan: Math.atan,
+    arcsenh: Math.asinh, arccosh: Math.acosh, arctanh: Math.atanh,
   };
 
   function evaluate(n, vars = {}) {
