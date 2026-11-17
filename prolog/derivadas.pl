@@ -2,7 +2,12 @@
 
 % =====================================================================
 % Base de conocimiento de derivadas elementales.
+%**Integrates:**
 %
+% Andrea Beatriz Orellana Jiménez 00106123
+% Pablo Enrique Vides Zavala 00080323
+% Raúl Napoleón Caprile Ramos 00006422
+% Alex Eduardo Ramirez Guevara 00009423
 % Uso:  d(Var, Expresion, Derivada)
 %   ?- d(x, 4*x^4 + sen(x), D).      D = 16*x^3+cos(x)
 %

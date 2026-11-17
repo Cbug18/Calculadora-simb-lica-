@@ -6,6 +6,12 @@
 % Uso:  s(Var, Expresion, Integral)        (la constante C la agrega la UI)
 %   ?- s(x, 4*x^4 + sen(x), I).      I = 4/5*x^5+ -cos(x)
 % =====================================================================
+%**Integrates:**
+%
+% Andrea Beatriz Orellana Jiménez 00106123
+% Pablo Enrique Vides Zavala 00080323
+% Raúl Napoleón Caprile Ramos 00006422
+% Alex Eduardo Ramirez Guevara 00009423
 
 :- ensure_loaded(utilidades).
 

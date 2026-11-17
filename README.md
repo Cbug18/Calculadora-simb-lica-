@@ -1,5 +1,14 @@
 # Calculadora Prolog
 
+**Integrates:**
+
+* Andrea Beatriz Orellana Jiménez 00106123
+* Pablo Enrique Vides Zavala 00080323
+* Raúl Napoleón Caprile Ramos 00006422
+* Alex Eduardo Ramirez Guevara 00009423
+
+
+
 Calculadora web de **derivadas**, **integrales** y **simplificación** simbólicas. Las cuentas las hace una base de conocimiento en Prolog y los resultados se muestran en LaTeX (KaTeX).
 
 ## Cómo ejecutarla
@@ -22,18 +31,19 @@ navegador (public/)                  server.js                 prolog/
  LaTeX ◄──parser.js── texto del resultado ◄──── JSON ◄─────────────┘
 ```
 
-| Archivo | Función |
-|---|---|
-| `prolog/derivadas.pl` | reglas de derivación `d(Var, Exp, D)`, con las reglas del producto, del cociente y de la cadena |
-| `prolog/integrales.pl` | reglas de integración `s(Var, Exp, I)`, con fórmulas de reducción |
+
+| Archivo                   | Función                                                                                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prolog/derivadas.pl`     | reglas de derivación`d(Var, Exp, D)`, con las reglas del producto, del cociente y de la cadena                                                                             |
+| `prolog/integrales.pl`    | reglas de integración`s(Var, Exp, I)`, con fórmulas de reducción                                                                                                         |
 | `prolog/simplificador.pl` | `simplificar/2` (agrupa términos semejantes, opera constantes, aplica identidades trigonométricas e hiperbólicas y valores exactos como `sen(pi/6) = 1/2`) y `evaluar/4` |
-| `prolog/utilidades.pl` | `libre_de/2` (¿la expresión es constante respecto a la variable?), `constante_numerica/2`, `divide_entre_cero/1` |
-| `prolog/main.pl` | lee una petición JSON por línea de stdin, consulta la base y escribe una respuesta JSON por línea |
-| `server.js` | sirve `public/` y mantiene un proceso `swipl main.pl` (10 kB por petición, 120 peticiones por minuto por IP) |
-| `public/parser.js` | texto ⇄ AST ⇄ LaTeX / Prolog |
-| `public/app.js` | teclado, pantalla de resultados, historial y el panel "Detalles de Prolog" |
-| `test/*.test.js` | tests del parser y de la API JSON (Node) |
-| `test/*_test.pl` | tests unitarios de cada archivo Prolog (plunit) |
+| `prolog/utilidades.pl`    | `libre_de/2` (¿la expresión es constante respecto a la variable?), `constante_numerica/2`, `divide_entre_cero/1`                                                          |
+| `prolog/main.pl`          | lee una petición JSON por línea de stdin, consulta la base y escribe una respuesta JSON por línea                                                                        |
+| `server.js`               | sirve`public/` y mantiene un proceso `swipl main.pl` (10 kB por petición, 120 peticiones por minuto por IP)                                                                |
+| `public/parser.js`        | texto ⇄ AST ⇄ LaTeX / Prolog                                                                                                                                              |
+| `public/app.js`           | teclado, pantalla de resultados, historial y el panel "Detalles de Prolog"                                                                                                  |
+| `test/*.test.js`          | tests del parser y de la API JSON (Node)                                                                                                                                    |
+| `test/*_test.pl`          | tests unitarios de cada archivo Prolog (plunit)                                                                                                                             |
 
 El servidor consulta primero la base con la expresión tal como se escribió. Si ninguna regla aplica (por ejemplo `int(x*x, x)`), simplifica la entrada (`x^2`) y vuelve a consultar; después prueba con la forma expandida (`(x+1)^2` → `x^2+2*x+1`). La interfaz avisa cuando pasa esto.
 
@@ -47,11 +57,12 @@ echo '{"expr":"der(x^3, x) + int(sen(x), x, 0, pi)"}' | swipl prolog/main.pl
 
 Como en una calculadora científica, una misma expresión puede mezclarlo todo y la tecla **=** la calcula:
 
-| Teclado | Texto | Significado |
-|---|---|---|
-| d/dx | `der(f, x)` | derivada (usa `d/3`) |
-| ∫dx | `int(f, x)` | integral indefinida (usa `s/3` y agrega `+ C`) |
-| ∫ₐᵇdx | `int(f, x, a, b)` | integral definida, exacta `F(b) - F(a)` |
+
+| Teclado  | Texto             | Significado                                   |
+| -------- | ----------------- | --------------------------------------------- |
+| d/dx     | `der(f, x)`       | derivada (usa`d/3`)                           |
+| ∫dx     | `int(f, x)`       | integral indefinida (usa`s/3` y agrega `+ C`) |
+| ∫ₐᵇdx | `int(f, x, a, b)` | integral definida, exacta:$F(b) - F(a)$       |
 
 Los operadores se pueden anidar y combinar: `der(int(x^2, x), x)`, `2*der(x^3, x) + int(cos(x), x, 0, pi/2)`.
 Si el resultado es un número también se muestra su aproximación decimal. **Ans** inserta el resultado anterior.
@@ -62,57 +73,78 @@ Si el resultado es un número también se muestra su aproximación decimal. **An
 
 La tecla **f(x)** abre un segundo teclado con las funciones que no caben en el primero.
 
-| Familia | Nombres (como se envían a Prolog) | También se acepta |
-|---|---|---|
-| Trigonométricas | `sen`, `cos`, `tan`, `sec`, `csc`, `cot` | `sin` |
-| Hiperbólicas | `senh`, `cosh`, `tanh`, `sech`, `csch`, `coth` | `sinh` |
-| Trigonométricas inversas | `arcsen`, `arccos`, `arctan` | `asin`, `arcsin`, `acos`, `atan` |
-| Hiperbólicas inversas | `arcsenh`, `arccosh`, `arctanh` | `asinh`, `arcsinh`, `acosh`, `atanh` |
-| Otras | `log`, `exp`, `sqrt`, `abs`, `a^x` | `ln`, `e^x`, `√`, `\|x\|` |
+
+| Familia                   | Nombres (como se envían a Prolog)             | También se acepta                   |
+| ------------------------- | ---------------------------------------------- | ------------------------------------ |
+| Trigonométricas          | `sen`, `cos`, `tan`, `sec`, `csc`, `cot`       | `sin`                                |
+| Hiperbólicas             | `senh`, `cosh`, `tanh`, `sech`, `csch`, `coth` | `sinh`                               |
+| Trigonométricas inversas | `arcsen`, `arccos`, `arctan`                   | `asin`, `arcsin`, `acos`, `atan`     |
+| Hiperbólicas inversas    | `arcsenh`, `arccosh`, `arctanh`                | `asinh`, `arcsinh`, `acosh`, `atanh` |
+| Otras                     | `log`, `exp`, `sqrt`, `abs`, `a^x`             | `ln`, `e^x`, `√`, `|x|`             |
 
 ## Qué sabe la base de conocimiento
 
 **Derivadas** (`d/3` en `prolog/derivadas.pl`): constantes, `x^n` (también con exponente fraccionario o simbólico), `a^x`, `e^x`, `ln`, `√`, las seis funciones trigonométricas, las seis hiperbólicas, `arcsen`, `arccos`, `arctan`, `arcsenh`, `arccosh` y `arctanh`, además de sumas, restas, múltiplos constantes y las reglas del **producto**, del **cociente** y de la **cadena**. La regla de la cadena toma la derivada exterior de la tabla `derivada_externa/3`, así que una función nueva necesita una regla y una línea en esa tabla.
 
-**Integrales** (`s/3` en `prolog/integrales.pl`): constantes, `x^n` (con `∫ 1/x = ln|x|`), `K/x^n`, `sen`, `cos`, `tan`, `cot`, `sec`, `csc`, `sec²`, `senh`, `cosh`, `e^x`, `√x`, `ln x`, linealidad (sumas, restas, múltiplos constantes) y las fórmulas de reducción de la sección siguiente.
+**Integrales** (`s/3` en `prolog/integrales.pl`): constantes, $x^n$ (con $\int \frac{1}{x}\,dx = \ln\lvert x\rvert$), $\frac{K}{x^n}$, $\operatorname{sen} x$, $\cos x$, $\tan x$, $\cot x$, $\sec x$, $\csc x$, $\sec^2 x$, $\operatorname{senh} x$, $\cosh x$, $e^x$, $\sqrt{x}$, $\ln x$, linealidad (sumas, restas, múltiplos constantes) y las fórmulas de reducción de la sección siguiente.
 
 ### Fórmulas de reducción
 
-Para `xⁿ·f(x)` con `n` entero positivo, la base aplica integración por partes de forma recursiva:
+Para $x^n f(x)$ con $n$ entero positivo, la base aplica integración por partes de forma recursiva:
 
-```
-∫ xⁿ sen x  dx = -xⁿ cos x  + n ∫ xⁿ⁻¹ cos x  dx
-∫ xⁿ cos x  dx =  xⁿ sen x  - n ∫ xⁿ⁻¹ sen x  dx
-∫ xⁿ senh x dx =  xⁿ cosh x - n ∫ xⁿ⁻¹ cosh x dx
-∫ xⁿ cosh x dx =  xⁿ senh x - n ∫ xⁿ⁻¹ senh x dx
-∫ xⁿ eˣ     dx =  xⁿ eˣ     - n ∫ xⁿ⁻¹ eˣ     dx
+```math
+\begin{aligned}
+\int x^n \operatorname{sen} x\,dx &= -x^n \cos x + n \int x^{n-1} \cos x\,dx \\
+\int x^n \cos x\,dx &= x^n \operatorname{sen} x - n \int x^{n-1} \operatorname{sen} x\,dx \\
+\int x^n \operatorname{senh} x\,dx &= x^n \cosh x - n \int x^{n-1} \cosh x\,dx \\
+\int x^n \cosh x\,dx &= x^n \operatorname{senh} x - n \int x^{n-1} \operatorname{senh} x\,dx \\
+\int x^n e^x\,dx &= x^n e^x - n \int x^{n-1} e^x\,dx
+\end{aligned}
 ```
 
-- **Caso base** (`n = 0`): la integral elemental de la función (`∫sen = -cos`, `∫cosh = senh`, ...).
-- **Paso recursivo**: si `∫f = s·g` (con `s = ±1`), entonces `∫xⁿ·f = s·xⁿ·g − s·n·∫xⁿ⁻¹·g`, y se vuelve a aplicar con `n − 1`.
+- **Caso base** ($n = 0$): la integral elemental de la función ($\int \operatorname{sen} x\,dx = -\cos x$, $\int \cosh x\,dx = \operatorname{senh} x$, ...).
+- **Paso recursivo**: si $\int f\,dx = s\,g$ (con $s = \pm 1$), entonces $\int x^n f\,dx = s\,x^n g - s\,n \int x^{n-1} g\,dx$, y se vuelve a aplicar con $n - 1$.
 - Las primitivas salen de la tabla `primitiva/3`; para agregar otra función basta una línea.
-- Funciona con los factores en cualquier orden (`x²·sen x` o `sen x·x²`), con un coeficiente delante (`3x²·cos x`) y en el modo de evaluación.
+- Funciona con los factores en cualquier orden ($x^2 \operatorname{sen} x$ o $\operatorname{sen} x \cdot x^2$), con un coeficiente delante ($3x^2 \cos x$) y en el modo de evaluación.
 
-```
-int(x^2*sen(x), x)    →  -x^2*cos(x) + 2*x*sen(x) + 2*cos(x) + C
-int(x^3*e^x, x)       →  x^3*exp(x) - 3*x^2*exp(x) + 6*x*exp(x) - 6*exp(x) + C
-int(x*sen(x), x, 0, pi)  →  pi
-```
+
+| Entrada                   | Resultado                                              |
+| ------------------------- | ------------------------------------------------------ |
+| `int(x^2*sen(x), x)`      | $-x^2 \cos x + 2x \operatorname{sen} x + 2 \cos x + C$ |
+| `int(x^3*e^x, x)`         | $x^3 e^x - 3x^2 e^x + 6x e^x - 6 e^x + C$              |
+| `int(x*sen(x), x, 0, pi)` | $\pi$                                                  |
 
 ### Identidades de la simplificación
 
 `simplificar/2` aplica las identidades de cociente dentro de un producto:
 
-| Trigonométricas | Hiperbólicas |
-|---|---|
-| `tan = sen/cos` | `tanh = senh/cosh` |
-| `cot = cos/sen` | `coth = cosh/senh` |
-| `sec = 1/cos` | `sech = 1/cosh` |
-| `csc = 1/sen` | `csch = 1/senh` |
 
-Pasa estas funciones a `sen` y `cos` (o `senh` y `cosh`), junta los exponentes y vuelve a escribir el resultado con la función más corta cuando coincide exactamente con una de ellas. Las identidades están en la tabla `cociente/5`. Ejemplos: `tan(x)*cos(x)` → `sen(x)`, `tan(x)*cot(x)` → `1`, `sen(x)*sec(x)` → `tan(x)`, `1/cos(x)^2` → `sec(x)^2`. Si no coincide, la expresión se deja igual (`sen(x)*cos(x)`).
+| Trigonométricas                                | Hiperbólicas                                              |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| $\tan x = \dfrac{\operatorname{sen} x}{\cos x}$ | $\tanh x = \dfrac{\operatorname{senh} x}{\cosh x}$         |
+| $\cot x = \dfrac{\cos x}{\operatorname{sen} x}$ | $\coth x = \dfrac{\cosh x}{\operatorname{senh} x}$         |
+| $\sec x = \dfrac{1}{\cos x}$                    | $\operatorname{sech} x = \dfrac{1}{\cosh x}$               |
+| $\csc x = \dfrac{1}{\operatorname{sen} x}$      | $\operatorname{csch} x = \dfrac{1}{\operatorname{senh} x}$ |
 
-También aplica las identidades pitagóricas `sen² + cos² = 1` y `cosh² − senh² = 1`, incluso con un factor común (`3x·cosh² − 3x·senh² + 1` → `3x + 1`).
+Pasa estas funciones a `sen` y `cos` (o `senh` y `cosh`), junta los exponentes y vuelve a escribir el resultado con la función más corta cuando coincide exactamente con una de ellas. Las identidades están en la tabla `cociente/5`. Ejemplos:
+
+
+| Entrada         | Resultado              |
+| --------------- | ---------------------- |
+| `tan(x)*cos(x)` | $\operatorname{sen} x$ |
+| `tan(x)*cot(x)` | $1$                    |
+| `sen(x)*sec(x)` | $\tan x$               |
+| `1/cos(x)^2`    | $\sec^2 x$             |
+
+Si no coincide, la expresión se deja igual (`sen(x)*cos(x)`).
+
+También aplica las identidades pitagóricas
+
+```math
+\operatorname{sen}^2 x + \cos^2 x = 1 \qquad \cosh^2 x - \operatorname{senh}^2 x = 1
+```
+
+incluso con un factor común: $3x \cosh^2 x - 3x \operatorname{senh}^2 x + 1 = 3x + 1$.
 
 Gracias a estas identidades y al reintento con la entrada simplificada, `der(sen(x)/cos(x), x)` y `int(1/cos(x)^2, x)` también funcionan.
 
@@ -126,7 +158,7 @@ Gracias a estas identidades y al reintento con la entrada simplificada, `der(sen
 
 ## Limitaciones conocidas
 
-- No hay reglas para `x^x` (una función elevada a otra función) ni para la derivada de `|x|`.
+- No hay reglas para $x^x$ (una función elevada a otra función) ni para la derivada de $\lvert x\rvert$.
 - No hay integración por sustitución: `int(sen(2x), x)` se rechaza.
-- Las fórmulas de reducción solo cubren `xⁿ` (con `n` entero positivo) por `sen`, `cos`, `senh`, `cosh` o `eˣ` de la propia variable: `int(x*tan(x), x)` o `int(x^2*sen(2x), x)` se rechazan.
+- Las fórmulas de reducción solo cubren $x^n$ (con $n$ entero positivo) por $\operatorname{sen}$, $\cos$, $\operatorname{senh}$, $\cosh$ o $e^x$ de la propia variable: `int(x*tan(x), x)` o `int(x^2*sen(2x), x)` se rechazan.
 - Algunas cláusulas del modo de evaluación de `derivadas.pl` todavía pueden ligar la variable (`d(X, 3*5, D)` da `X = 5`). Los tests que lo describen están marcados `fixme` en `test/derivadas_test.pl`.
