@@ -13,9 +13,8 @@ test(combinada) :- calcular(der(x^3, x) + int(sen(x), x, 0, pi), 3*x^2+2).
 test(solo_simplificar) :- calcular(x*x+x*x, 2*x^2).
 test(producto_por_reintento) :- calcular(der(x*x, x), 2*x).
 test(polinomio) :- calcular(der(3*x^2-5*x+1, x), 6*x-5).
-test(regla_producto, [fixme('derivadas.pl no tiene regla del producto')]) :-
+test(regla_producto) :-
     calcular(der(x*sen(x), x), x*cos(x)+sen(x)).
-test(sin_regla_producto, [throws(error_calculo(_))]) :- calcular(der(x*sen(x), x), _).
 
 % Reintentos
 test(reintento_simplificada) :-

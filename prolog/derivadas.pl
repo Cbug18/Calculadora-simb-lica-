@@ -1,7 +1,5 @@
-:- encoding(utf8).
-
 % =====================================================================
-% Base de conocimiento de derivadas elementales (sin regla de la cadena).
+% Base de conocimiento de derivadas elementales.
 %
 % Uso:  d(Var, Expresion, Derivada)
 %   ?- d(x, 4*x^4 + sen(x), D).      D = 16*x^3+cos(x)
@@ -118,6 +116,17 @@ d(Var, exp(Var), exp(Var)):-
 d(Var, sqrt(Var), 1/(2*sqrt(Var))):-
     atomic(Var), !.
 
+% [AGREGADO] Regla de la cadena: f(U)' = f'(U) * U'
+
+d(Var, Exp, DExt*DU):-
+    atomic(Var), compound(Exp), Exp =.. [F, U],
+    derivada_externa(F, U, DExt), d(Var, U, DU), !.
+
+
+% [AGREGADO] Regla de la cadena para potencias: (U^N)' = N*U^(N-1) * U'
+
+d(Var, U^N, N*U^Nm1*DU):-
+    atomic(Var), number(N), is(Nm1, -(N, 1)), d(Var, U, DU), !.
 
 % [AGREGADO] Regla del múltiplo constante: (K*F)' = K*F', (F*K)' = F'*K, (F/K)' = F'/K
 
@@ -137,16 +146,21 @@ d(Var, -F, -DF):-
     atomic(Var), d(Var, F, DF), !.
 
 
+% [AGREGADO] Regla del producto: (F*G)' = F'*G + F*G'
+
+d(Var, F*G, DF*G + F*DG):-
+    atomic(Var), d(Var, F, DF), d(Var, G, DG), !.
+
 % Derivada de la suma de pos funcione:
 
 d(Var, F+G, DF+DG):-
-    atomic(Var), d(Var, F, DF), d(Var, G, DG).
+    atomic(Var), d(Var, F, DF), d(Var, G, DG), !.
 
 
 % [AGREGADO] Derivada de la resta de dos funciones:
 
 d(Var, F-G, DF-DG):-
-    atomic(Var), d(Var, F, DF), d(Var, G, DG).
+    atomic(Var), d(Var, F, DF), d(Var, G, DG), !.
 
 
 % DERIVADAS PARA SU POSTERIOR EVALUACION:
@@ -212,3 +226,16 @@ d(Var, tan(Var), (sec(Var))^2):-
 
 d(Var, F+G, DF+DG):-
     var(Var), d(Var, F, DF), d(Var, G, DG).
+
+
+% DERIVADAS DE LAS FUNCIONES (para la regla de la cadena):
+% derivada_externa(F, U, D): la derivada de F(U) respecto a U es D.
+
+derivada_externa(log, U, 1/U).
+derivada_externa(ln, U, 1/U).
+derivada_externa(sen, U, cos(U)).
+derivada_externa(sin, U, cos(U)).
+derivada_externa(cos, U, -sen(U)).
+derivada_externa(tan, U, sec(U)^2).
+derivada_externa(exp, U, exp(U)).
+derivada_externa(sqrt, U, 1/(2*sqrt(U))).
