@@ -1,4 +1,6 @@
-=% =====================================================================
+:- encoding(utf8).
+
+% =====================================================================
 % Base de conocimiento de integrales indefinidas elementales.
 %
 % Uso:  s(Var, Expresion, Integral)        (la constante C la agrega la UI)
