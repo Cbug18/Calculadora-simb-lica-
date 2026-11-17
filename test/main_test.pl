@@ -43,6 +43,10 @@ test(division_cero, [throws(error_calculo(_))]) :- calcular(x/0, _).
 % valida/1
 test(valida_parser) :- valida(der(4*x^4+sen(x), x) + int(x, x, 0, pi/2) - (-3)).
 test(valida_funcion, [throws(error_calculo(_))]) :- valida(foo(x)).
+test(valida_funciones_nuevas) :-
+    valida(senh(x) + cosh(x) + tanh(x) + sech(x) + csch(x) + coth(x)),
+    valida(arcsen(x) + arccos(x) + arctan(x)),
+    valida(arcsenh(x) + arccosh(x) + arctanh(x)).
 test(valida_aridad, [throws(error_calculo(_))]) :- valida(sen(x, y)).
 test(valida_der_variable, [throws(error_calculo(_))]) :- valida(der(x^2, 2)).
 test(valida_der_pi, [throws(error_calculo(_))]) :- valida(der(x^2, pi)).
