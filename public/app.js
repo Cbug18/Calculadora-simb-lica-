@@ -258,18 +258,19 @@
     resultBox.className = 'card result error';
     resultBox.replaceChildren(el('p', 'msg', message || 'Error desconocido'));
     if (/^No hay regla para derivar/.test(message || '')) {
-      // The derivative KB (prolog/derivadas.pl) only has rules for elementary
-      // functions of the variable itself: no product or chain rule.
+      // prolog/derivadas.pl: product, quotient and chain rules over the
+      // elementary functions; it has no rule for f(x)^g(x) or |x|.
       resultBox.appendChild(el('p', 'note',
-        'La base de conocimiento deriva sumas, restas, constantes por funciones y ' +
-        'x^n, K/x^n, sen, cos, tan, ln, e^x y √ aplicadas directamente a la variable ' +
-        '(sin regla del producto ni de la cadena: sen(2x) o x·sen(x) no se pueden derivar).'));
+        'La base de conocimiento deriva sumas, restas, productos, cocientes y potencias, ' +
+        'con regla de la cadena, de x^n, a^x, e^x, ln, √, las trigonométricas, ' +
+        'las hiperbólicas y sus inversas. No tiene reglas para x^x ni para |x|.'));
     } else if (/^No hay regla para integrar/.test(message || '')) {
-      // Same limits in prolog/integrales.pl: linearity plus elementary forms.
+      // prolog/integrales.pl: linearity plus elementary forms of the variable.
       resultBox.appendChild(el('p', 'note',
         'La base de conocimiento integra sumas, restas, constantes por funciones y ' +
-        'x^n, K/x^n, sen, cos, sec², ln, e^x y √ aplicadas directamente a la variable ' +
-        '(sin integración por partes ni sustitución: sen(2x) o x·sen(x) no se pueden integrar).'));
+        'x^n, K/x^n, sen, cos, tan, cot, sec, csc, sec², ln, e^x y √ aplicadas directamente ' +
+        'a la variable (sin integración por partes ni sustitución: sen(2x) o x·sen(x) ' +
+        'no se pueden integrar).'));
     }
     if (request) resultBox.appendChild(prologDetails(request, null));
   }
