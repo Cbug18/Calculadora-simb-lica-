@@ -80,6 +80,38 @@ test(exponente_simbolico) :-
     d(x, x^y, D), assertion(D == y*x^(y-1)).
 test(cadena_exponente_simbolico) :-
     d(x, (x^2+1)^a, D), assertion(D == a*(x^2+1)^(a-1)*(2*x^1+0)).
+test(exponencial_base_numero) :-
+    d(x, 2^x, D), assertion(D == 2^x*log(2)).
+test(exponencial_base_simbolica) :-
+    d(x, a^x, D), assertion(D == a^x*log(a)).
+test(cadena_exponencial_base) :-
+    d(x, 3^(x^2), D),
+    assertion(valor(x, D, 1.3, 3^(1.3^2)*log(3)*2*1.3)).
+test(senh) :- d(x, senh(x), cosh(x)).
+test(cosh) :- d(x, cosh(x), senh(x)).
+test(tanh) :- d(x, tanh(x), sech(x)^2).
+test(sech) :- d(x, sech(x), D), assertion(D == -sech(x)*tanh(x)).
+test(csch) :- d(x, csch(x), D), assertion(D == -csch(x)*coth(x)).
+test(coth) :- d(x, coth(x), D), assertion(D == -csch(x)^2).
+test(hiperbolicas_numerica) :-
+    forall(member(F, [senh(x), cosh(x), tanh(x), sech(x), csch(x), coth(x),
+                      senh(x^2), cosh(3*x), tanh(sen(x)), sech(2*x),
+                      csch(x^2), coth(x/2)]),
+           comprobar_derivada(F)).
+test(arcsen) :- d(x, arcsen(x), 1/sqrt(1-x^2)).
+test(arccos) :- d(x, arccos(x), D), assertion(D == -1/sqrt(1-x^2)).
+test(arctan) :- d(x, arctan(x), 1/(1+x^2)).
+test(trig_inversas_numerica) :-
+    forall(member(F, [arcsen(x/2), arccos(x/2), arctan(x),
+                      arcsen(x^2/4), arctan(3*x), arccos(sen(x))]),
+           comprobar_derivada(F)).
+test(arcsenh) :- d(x, arcsenh(x), 1/sqrt(x^2+1)).
+test(arccosh) :- d(x, arccosh(x), 1/sqrt(x^2-1)).
+test(arctanh) :- d(x, arctanh(x), 1/(1-x^2)).
+test(hiperbolicas_inversas_numerica) :-
+    forall(member(F, [arcsenh(x), arccosh(x), arctanh(x/2),
+                      arcsenh(x^2), arccosh(2*x), arctanh(sen(x)/2)]),
+           comprobar_derivada(F)).
 test(cadena_doble) :-
     d(x, sen(cos(x)), D),
     assertion(valor(x, D, 1.3, cos(cos(1.3))*(-sin(1.3)))).
@@ -132,6 +164,16 @@ sustituir_x(sec(A), P, 1/cos(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(csc(A), P, 1/sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(cot(A), P, cos(R)/sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(ln(A), P, log(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(senh(A), P, sinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arcsen(A), P, asin(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arccos(A), P, acos(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arctan(A), P, atan(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arcsenh(A), P, asinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arccosh(A), P, acosh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(arctanh(A), P, atanh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(sech(A), P, 1/cosh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(csch(A), P, 1/sinh(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(coth(A), P, cosh(R)/sinh(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(E, P, R) :-
     E =.. [F|Args],
     maplist([A, B]>>sustituir_x(A, P, B), Args, RArgs),

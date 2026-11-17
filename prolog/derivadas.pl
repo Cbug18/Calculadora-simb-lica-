@@ -59,6 +59,12 @@ d(Var, Var^N, N*Var^Nm1):-
 d(Var, Var^N, N*Var^(N-1)):-
     atomic(Var), libre_de(N, Var), !.
 
+
+% [AGREGADO] Derivada de la exponencial de base A (A constante, A > 0)
+
+d(Var, A^Var, A^Var*log(A)):-
+    atomic(Var), libre_de(A, Var), !.
+
 % Derivada de una constante por una variable elevada a la N:
 
 d(Var, K*Var^N, C*Var^Nm1):-
@@ -124,6 +130,48 @@ d(Var, csc(Var), -csc(Var)*cot(Var)):-
 d(Var, cot(Var), -csc(Var)^2):-
     atomic(Var), !.
 
+% [AGREGADO] Derivadas de las funciones hiperbólicas:
+
+d(Var, senh(Var), cosh(Var)):-
+    atomic(Var), !.
+
+d(Var, cosh(Var), senh(Var)):-
+    atomic(Var), !.
+
+d(Var, tanh(Var), sech(Var)^2):-
+    atomic(Var), !.
+
+d(Var, sech(Var), -sech(Var)*tanh(Var)):-
+    atomic(Var), !.
+
+d(Var, csch(Var), -csch(Var)*coth(Var)):-
+    atomic(Var), !.
+
+d(Var, coth(Var), -csch(Var)^2):-
+    atomic(Var), !.
+
+% [AGREGADO] Derivadas de las trigonométricas inversas:
+
+d(Var, arcsen(Var), 1/sqrt(1-Var^2)):-
+    atomic(Var), !.
+
+d(Var, arccos(Var), -1/sqrt(1-Var^2)):-
+    atomic(Var), !.
+
+d(Var, arctan(Var), 1/(1+Var^2)):-
+    atomic(Var), !.
+
+% [AGREGADO] Derivadas de las hiperbólicas inversas:
+
+d(Var, arcsenh(Var), 1/sqrt(Var^2+1)):-
+    atomic(Var), !.
+
+d(Var, arccosh(Var), 1/sqrt(Var^2-1)):-
+    atomic(Var), !.
+
+d(Var, arctanh(Var), 1/(1-Var^2)):-
+    atomic(Var), !.
+
 % [AGREGADO] Derivada de la exponencial:
 
 d(Var, exp(Var), exp(Var)):-
@@ -149,6 +197,12 @@ d(Var, U^N, N*U^Nm1*DU):-
 
 d(Var, U^N, N*U^(N-1)*DU):-
     atomic(Var), libre_de(N, Var), d(Var, U, DU), !.
+
+
+% [AGREGADO] Regla de la cadena para la exponencial de base A
+
+d(Var, A^U, A^U*log(A)*DU):-
+    atomic(Var), libre_de(A, Var), d(Var, U, DU), !.
 
 % [AGREGADO] Regla del múltiplo constante: (K*F)' = K*F', (F*K)' = F'*K, (F/K)' = F'/K
 
@@ -269,3 +323,15 @@ derivada_externa(sqrt, U, 1/(2*sqrt(U))).
 derivada_externa(sec, U, sec(U)*tan(U)).
 derivada_externa(csc, U, -csc(U)*cot(U)).
 derivada_externa(cot, U, -csc(U)^2).
+derivada_externa(senh, U, cosh(U)).
+derivada_externa(cosh, U, senh(U)).
+derivada_externa(tanh, U, sech(U)^2).
+derivada_externa(sech, U, -sech(U)*tanh(U)).
+derivada_externa(csch, U, -csch(U)*coth(U)).
+derivada_externa(coth, U, -csch(U)^2).
+derivada_externa(arcsen, U, 1/sqrt(1-U^2)).
+derivada_externa(arccos, U, -1/sqrt(1-U^2)).
+derivada_externa(arctan, U, 1/(1+U^2)).
+derivada_externa(arcsenh, U, 1/sqrt(U^2+1)).
+derivada_externa(arccosh, U, 1/sqrt(U^2-1)).
+derivada_externa(arctanh, U, 1/(1-U^2)).
