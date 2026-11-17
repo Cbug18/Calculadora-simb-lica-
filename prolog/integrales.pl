@@ -9,6 +9,11 @@
 
 :- ensure_loaded(utilidades).
 
+% [AGREGADO] Una expresión que divide entre cero (x/0, 1/(2-2), sen(1/0))
+% no tiene integral: esta regla va primero y corta con fallo.
+
+s(_, Exp, _):-
+    divide_entre_cero(Exp), !, fail.
 
 % Integral de una constante:
 
@@ -31,20 +36,20 @@ s(Var, Var, 1/2*Var^2):-
 % [AGREGADO] Integral de x^-1 = log(x)  (debe ir antes de la regla de x^N):
 
 s(Var, Var^N, log(abs(Var))):-
-    atomic(Var), number(N), N =:= -1, !.
+    atomic(Var), valor_numerico(N, V), V =:= -1, !.
 
 
 % Integral de una variable elevada a la N:
 
 s(Var, Var^N, 1/M*Var^M):-
-    atomic(Var), number(N), is(M, +(N,1)), !.
+    atomic(Var), valor_numerico(N, V), is(M, +(V,1)), !.
 
 
 % Integral de una constante por una variable elevada a la N:
 % [CORREGIDO] N =\= -1 (antes K*x^-1 producía una división entre cero).
 
 s(Var, K*Var^N, K/M*Var^M):-
-    atomic(Var), number(K), number(N), N =\= -1, is(M, +(N,1)), !.
+    atomic(Var), number(K), valor_numerico(N, V), V =\= -1, is(M, +(V,1)), !.
 
 
 % [AGREGADO] Integral de K/x = K*log(x):
@@ -56,11 +61,10 @@ s(Var, K/Var, K*log(abs(Var))):-
 % [AGREGADO] Integral de K/x^N  (K/x^N = K*x^-N):
 
 s(Var, K/Var^N, K*log(abs(Var))):-
-    atomic(Var), number(N), N =:= 1, libre_de(K, Var), !.
+    atomic(Var), valor_numerico(N, V), V =:= 1, libre_de(K, Var), !.
 
 s(Var, K/Var^N, K/M*Var^M):-
-    atomic(Var), number(N), libre_de(K, Var), is(M, 1 - N), !.
-
+    atomic(Var), valor_numerico(N, V), libre_de(K, Var), is(M, 1 - V), !.
 
 % [AGREGADO] Funciones elementales:
 
