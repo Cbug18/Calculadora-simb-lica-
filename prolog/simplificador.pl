@@ -565,29 +565,80 @@ seno_semiciclo(K0, V) :-
                           1/3-sqrt(3)/2, 1/2-1]),
            K =:= N rdiv D )).
 
-% sen(A)^P / cos(A)^P -> tan(A)^P  y  cos(A)^P / sen(A)^P -> cot(A)^P.
+% Identidades de cociente dentro de un producto:
+%   tan = sen/cos    cot = cos/sen    sec = 1/cos    csc = 1/sen
+%   tanh = senh/cosh coth = cosh/senh sech = 1/cosh  csch = 1/senh
+% Las funciones derivadas (con exponente numérico) se pasan a sen y cos,
+% se juntan los exponentes y se vuelve a escribir con la función más
+% corta cuando el resultado es exactamente una de ellas:
+%   tan(x)*cos(x) -> sen(x),  sen(x)/cos(x) -> tan(x),  1/cos(x) -> sec(x).
 identidad_cociente(Fs0, Fs) :-
-    ( select(B1-P, Fs0, R1), nonvar(B1), B1 = sen(A), number(P), P > 0,
-      select(B2-Q, R1, R2), nonvar(B2), B2 = cos(A2), A2 == A,
-      number(Q), Q =:= -P ->
-        msort([tan(A)-P|R2], Fs)
-    ; select(B1-P, Fs0, R1), nonvar(B1), B1 = cos(A), number(P), P > 0,
-      select(B2-Q, R1, R2), nonvar(B2), B2 = sen(A2), A2 == A,
-      number(Q), Q =:= -P ->
-        msort([cot(A)-P|R2], Fs)
+    foldl(descomponer_factor, Fs0, [], Fs1),
+    msort(Fs1, Fs2),
+    agrupar_factores(Fs2, Fs3),
+    recomponer(Fs3, Fs).
+
+% cociente(Funcion, Seno, Coseno, ExpSeno, ExpCoseno)
+cociente(tan,  sen,  cos,   1, -1).
+cociente(cot,  sen,  cos,  -1,  1).
+cociente(sec,  sen,  cos,   0, -1).
+cociente(csc,  sen,  cos,  -1,  0).
+cociente(tanh, senh, cosh,  1, -1).
+cociente(coth, senh, cosh, -1,  1).
+cociente(sech, senh, cosh,  0, -1).
+cociente(csch, senh, cosh, -1,  0).
+
+descomponer_factor(B-P, Acc, [S-ES, C-EC|Acc]) :-
+    number(P), nonvar(B), B =.. [N, A],
+    cociente(N, NS, NC, KS, KC), !,
+    S =.. [NS, A], C =.. [NC, A],
+    ES is KS*P, EC is KC*P.
+descomponer_factor(F, Acc, [F|Acc]).
+
+% Si los exponentes de sen(A) y cos(A) son justo los de una función
+% derivada (elevada a K), se escribe esa función.
+recomponer(Fs0, Fs) :-
+    ( member(B-_, Fs0), nonvar(B), B =.. [N, A], basica(N, NS, NC),
+      exponente_basico(Fs0, NS, A, ES, R1),
+      exponente_basico(R1, NC, A, EC, R2),
+      K is max(abs(ES), abs(EC)), K > 0,
+      cociente(Nombre, NS, NC, KS, KC),
+      ES =:= KS*K, EC =:= KC*K ->
+        F =.. [Nombre, A],
+        msort([F-K|R2], Fs1),
+        recomponer(Fs1, Fs)
     ; Fs = Fs0
     ).
 
+basica(sen, sen, cos).
+basica(cos, sen, cos).
+basica(senh, senh, cosh).
+basica(cosh, senh, cosh).
+
+% Exponente numérico de Nombre(A) en la lista (0 si no está).
+exponente_basico(Fs, Nombre, A, E, Resto) :-
+    ( select(B-E0, Fs, R), nonvar(B), B =.. [Nombre, A1], A1 == A, number(E0) ->
+        E = E0, Resto = R
+    ; E = 0, Resto = Fs
+    ).
+
 % C*sen(A)^2*F + C*cos(A)^2*F -> C*F
+% C*cosh(A)^2*F - C*senh(A)^2*F -> C*F
 identidad_pitagorica(P0, P) :-
     ( select(m(C, Fs), P0, R1),
-      select(B-E, Fs, Resto), nonvar(B), B = sen(A), E == 2,
-      msort([cos(A)-2|Resto], FsCos),
-      select(m(C2, Fs2), R1, R2), Fs2 == FsCos, C2 =:= C ->
-        sumar_polinomios([m(C, Resto)], R2, P1),
+      select(B-E, Fs, Resto), nonvar(B), E == 2,
+      pitagorica(B, Otra, Signo),
+      msort([Otra-2|Resto], FsOtra),
+      select(m(C2, Fs2), R1, R2), Fs2 == FsOtra, C2 =:= Signo*C ->
+        CR is Signo*C,
+        sumar_polinomios([m(CR, Resto)], R2, P1),
         identidad_pitagorica(P1, P)
     ; P = P0
     ).
+
+% pitagorica(sen², Otra², Signo): sen² + cos² = 1, cosh² - senh² = 1.
+pitagorica(sen(A), cos(A), 1).
+pitagorica(senh(A), cosh(A), -1).
 
 % ------------------------------------------------------------------
 % Polinomio -> expresión

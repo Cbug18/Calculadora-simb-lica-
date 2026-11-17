@@ -1,6 +1,13 @@
 :- encoding(utf8).
 % main.pl — orquesta la base de conocimiento y habla JSON con el servidor.
 %
+
+%**Integrates:**
+%
+% Andrea Beatriz Orellana Jiménez 00106123
+% Pablo Enrique Vides Zavala 00080323
+% Raúl Napoleón Caprile Ramos 00006422
+% Alex Eduardo Ramirez Guevara 00009423
 % Protocolo: una petición JSON por línea en la entrada estándar y una
 % respuesta JSON por línea en la salida. El proceso atiende peticiones
 % hasta que se cierra la entrada, así que el servidor puede mantener un
