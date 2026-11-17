@@ -63,11 +63,23 @@ test(regla_producto) :-
 test(producto_triple) :-
     d(x, x*x*x, D),
     assertion(valor(x, D, 1.3, 3*1.3^2)).
+test(regla_cociente) :-
+    d(x, x/(x+1), D),
+    assertion(valor(x, D, 1.3, 1/(2.3^2))).
+test(cociente_funciones) :-
+    d(x, sen(x)/x, D),
+    assertion(valor(x, D, 1.3, (cos(1.3)*1.3 - sin(1.3))/1.3^2)).
+test(sec) :- d(x, sec(x), sec(x)*tan(x)).
+test(csc) :- d(x, csc(x), D), assertion(D == -csc(x)*cot(x)).
+test(cot) :- d(x, cot(x), D), assertion(D == -csc(x)^2).
+test(cadena_sec_csc_cot) :-
+    d(x, sec(2*x) + csc(x^2) + cot(3*x), D),
+    assertion(valor(x, D, 1.3,
+        2*tan(2.6)/cos(2.6) - 2*1.3*cos(1.69)/sin(1.69)^2 - 3/sin(3.9)^2)).
 test(cadena_doble) :-
     d(x, sen(cos(x)), D),
     assertion(valor(x, D, 1.3, cos(cos(1.3))*(-sin(1.3)))).
 test(funcion_no_soportada, [fail]) :- d(x, desconocida(x), _).
-test(sec_no_soportada, [fail]) :- d(x, sec(x), _).
 
 % ------------------------------------------------------------------
 % Variable de Prolog sin ligar ("para evaluación"): d(X, Exp, D)
@@ -113,6 +125,8 @@ sustituir_x(x, P, P) :- !.
 sustituir_x(E, _, E) :- atomic(E), !.
 sustituir_x(sen(A), P, sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(sec(A), P, 1/cos(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(csc(A), P, 1/sin(R)) :- !, sustituir_x(A, P, R).
+sustituir_x(cot(A), P, cos(R)/sin(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(ln(A), P, log(R)) :- !, sustituir_x(A, P, R).
 sustituir_x(E, P, R) :-
     E =.. [F|Args],
@@ -124,13 +138,9 @@ sustituir_x(E, P, R) :-
 % ------------------------------------------------------------------
 
 
-test(regla_cociente, [fixme('falta la regla del cociente')]) :-
-    d(x, x/(x+1), D),
-    valor(x, D, 1.3, 1/(2.3^2)).
+
 test(exponente_simbolico, [fixme('falta x^y con exponente simbólico')]) :-
     d(x, x^y, D), D == y*x^(y-1).
-test(sec_csc_cot, [fixme('faltan sec, csc y cot')]) :-
-    d(x, sec(x), _), d(x, csc(x), _), d(x, cot(x), _).
 test(evaluacion_constante, [fixme('las cláusulas para evaluación ligan la variable')]) :-
     d(X, 3*5, D), var(X), D == 0.
 test(coeficiente_simbolico_prolog, [fixme('K*X^N con K simbólico lanza un error de is/2')]) :-

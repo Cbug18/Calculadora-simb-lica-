@@ -105,6 +105,17 @@ d(Var, tan(Var), (sec(Var))^2):-
     atomic(Var), !.
 
 
+% [AGREGADO] Derivadas de la secante, la cosecante y la cotangente:
+
+d(Var, sec(Var), sec(Var)*tan(Var)):-
+    atomic(Var), !.
+
+d(Var, csc(Var), -csc(Var)*cot(Var)):-
+    atomic(Var), !.
+
+d(Var, cot(Var), -csc(Var)^2):-
+    atomic(Var), !.
+
 % [AGREGADO] Derivada de la exponencial:
 
 d(Var, exp(Var), exp(Var)):-
@@ -149,6 +160,11 @@ d(Var, -F, -DF):-
 % [AGREGADO] Regla del producto: (F*G)' = F'*G + F*G'
 
 d(Var, F*G, DF*G + F*DG):-
+    atomic(Var), d(Var, F, DF), d(Var, G, DG), !.
+
+% [AGREGADO] Regla del cociente: (F/G)' = (F'*G - F*G') / G^2
+
+d(Var, F/G, (DF*G - F*DG)/G^2):-
     atomic(Var), d(Var, F, DF), d(Var, G, DG), !.
 
 % Derivada de la suma de pos funcione:
@@ -239,3 +255,6 @@ derivada_externa(cos, U, -sen(U)).
 derivada_externa(tan, U, sec(U)^2).
 derivada_externa(exp, U, exp(U)).
 derivada_externa(sqrt, U, 1/(2*sqrt(U))).
+derivada_externa(sec, U, sec(U)*tan(U)).
+derivada_externa(csc, U, -csc(U)*cot(U)).
+derivada_externa(cot, U, -csc(U)^2).
