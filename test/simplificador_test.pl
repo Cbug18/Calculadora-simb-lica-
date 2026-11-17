@@ -87,4 +87,18 @@ comprobar_simplificacion(X, F) :-
     valor_numerico(F1, VF), valor_numerico(S1, VS),
     assertion(abs(VF-VS) < 1.0e-9).
 
+% Hiperbólicas e inversas: paridad, valores exactos y dominios
+test(senh_impar) :- simplificar(senh(-x), -senh(x)).
+test(cosh_par) :- simplificar(cosh(-x), cosh(x)).
+test(cosh_cero) :- simplificar(cosh(0)+senh(0), 1).
+test(arcsen_exacto) :- simplificar(arcsen(1/2), pi/6).
+test(arccos_exacto) :- simplificar(arccos(-1/2), 2*pi/3).
+test(arctan_exacto) :- simplificar(arctan(1), pi/4).
+test(arcsen_fuera, [throws(error_calculo(_))]) :- simplificar(arcsen(2), _).
+test(arctanh_fuera, [throws(error_calculo(_))]) :- simplificar(arctanh(1), _).
+test(coth_cero, [throws(error_calculo(_))]) :- simplificar(coth(0), _).
+test(decimal_nuevas) :-
+    valor_numerico(senh(1)+arctan(1/3), V),
+    assertion(abs(V - (sinh(1)+atan(1/3))) < 1.0e-12).
+
 :- end_tests(simplificador).

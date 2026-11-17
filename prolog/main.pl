@@ -204,6 +204,18 @@ funcion(ln).
 funcion(exp).
 funcion(sqrt).
 funcion(abs).
+funcion(senh).
+funcion(cosh).
+funcion(tanh).
+funcion(sech).
+funcion(csch).
+funcion(coth).
+funcion(arcsen).
+funcion(arccos).
+funcion(arctan).
+funcion(arcsenh).
+funcion(arccosh).
+funcion(arctanh).
 
 funcion_calculo(der, "der(f, x)").
 funcion_calculo(int, "int(f, x) o int(f, x, a, b)").

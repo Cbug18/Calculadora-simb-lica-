@@ -431,10 +431,20 @@ funcion_impar(sen).
 funcion_impar(tan).
 funcion_impar(csc).
 funcion_impar(cot).
+funcion_impar(senh).
+funcion_impar(tanh).
+funcion_impar(csch).
+funcion_impar(coth).
+funcion_impar(arcsen).
+funcion_impar(arctan).
+funcion_impar(arcsenh).
+funcion_impar(arctanh).
 
 funcion_par(cos).
 funcion_par(sec).
 funcion_par(abs).
+funcion_par(cosh).
+funcion_par(sech).
 
 % sen(-x) -> -sen(x): solo cuando el argumento es un monomio negativo.
 argumento_negativo(A, A1) :-
@@ -468,6 +478,38 @@ valor_exacto(abs, A, A) :-
 valor_exacto(Trig, A, V) :-
     angulo_pi(A, K),
     trig_exacto(Trig, K, V).
+valor_exacto(F, A, V) :-
+    constante(A, C), rational(C),
+    exacto_nuevas(F, C, V).
+
+% Valores exactos y dominios de las hiperbólicas y las inversas.
+% (Los negativos ya los resuelve funcion_impar: arcsen(-1/2) = -arcsen(1/2).)
+exacto_nuevas(senh, 0, 0).
+exacto_nuevas(tanh, 0, 0).
+exacto_nuevas(cosh, 0, 1).
+exacto_nuevas(sech, 0, 1).
+exacto_nuevas(csch, 0, _) :-
+    throw(error_calculo("csch no está definida en 0")).
+exacto_nuevas(coth, 0, _) :-
+    throw(error_calculo("coth no está definida en 0")).
+exacto_nuevas(arcsenh, 0, 0).
+exacto_nuevas(arcsen, C, _) :-
+    abs(C) > 1, throw(error_calculo("arcsen solo está definido en [-1, 1]")).
+exacto_nuevas(arcsen, C, V) :-
+    once(( member(N/D-V, [0/1-0, 1/2-pi/6, 1/1-pi/2]), C =:= N rdiv D )).
+exacto_nuevas(arccos, C, _) :-
+    abs(C) > 1, throw(error_calculo("arccos solo está definido en [-1, 1]")).
+exacto_nuevas(arccos, C, V) :-
+    once(( member(N/D-V, [-1/1-pi, -1/2-2*pi/3, 0/1-pi/2, 1/2-pi/3, 1/1-0]),
+           C =:= N rdiv D )).
+exacto_nuevas(arctan, C, V) :-
+    once(( member(N/D-V, [0/1-0, 1/1-pi/4]), C =:= N rdiv D )).
+exacto_nuevas(arccosh, C, _) :-
+    C < 1, throw(error_calculo("arccosh solo está definido para valores >= 1")).
+exacto_nuevas(arccosh, 1, 0).
+exacto_nuevas(arctanh, C, _) :-
+    abs(C) >= 1, throw(error_calculo("arctanh solo está definido en (-1, 1)")).
+exacto_nuevas(arctanh, 0, 0).
 
 % A = K*pi con K racional.
 angulo_pi(A, K) :-
@@ -666,3 +708,15 @@ funcion_aritmetica(ln, X, log(X)).
 funcion_aritmetica(exp, X, exp(X)).
 funcion_aritmetica(sqrt, X, sqrt(X)).
 funcion_aritmetica(abs, X, abs(X)).
+funcion_aritmetica(senh, X, sinh(X)).
+funcion_aritmetica(cosh, X, cosh(X)).
+funcion_aritmetica(tanh, X, tanh(X)).
+funcion_aritmetica(sech, X, 1/cosh(X)).
+funcion_aritmetica(csch, X, 1/sinh(X)).
+funcion_aritmetica(coth, X, cosh(X)/sinh(X)).
+funcion_aritmetica(arcsen, X, asin(X)).
+funcion_aritmetica(arccos, X, acos(X)).
+funcion_aritmetica(arctan, X, atan(X)).
+funcion_aritmetica(arcsenh, X, asinh(X)).
+funcion_aritmetica(arccosh, X, acosh(X)).
+funcion_aritmetica(arctanh, X, atanh(X)).
