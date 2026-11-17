@@ -39,6 +39,16 @@ test(pitagorica) :- simplificar(sen(x)^2+cos(x)^2, 1).
 test(pitagorica_con_factor) :- simplificar(3*x*sen(x)^2+3*x*cos(x)^2+1, 3*x+1).
 test(tangente) :- simplificar(sen(x)/cos(x), tan(x)).
 test(cotangente) :- simplificar(cos(x)^2/sen(x)^2, cot(x)^2).
+test(secante) :- simplificar(1/cos(x), sec(x)).
+test(cosecante) :- simplificar(1/sen(x)^2, csc(x)^2).
+test(tan_por_cos) :- simplificar(tan(x)*cos(x), sen(x)).
+test(cot_por_sen) :- simplificar(cot(x)*sen(x), cos(x)).
+test(tan_por_cot) :- simplificar(tan(x)*cot(x), 1).
+test(sen_por_sec) :- simplificar(sen(x)*sec(x), tan(x)).
+test(tan_entre_sec) :- simplificar(tan(x)/sec(x), sen(x)).
+test(cociente_con_coeficiente) :- simplificar(3*sen(2*x)/cos(2*x), 3*tan(2*x)).
+test(tan_mas_cociente) :- simplificar(tan(x)+sen(x)/cos(x), 2*tan(x)).
+test(cociente_sin_identidad) :- simplificar(sen(x)*cos(x), cos(x)*sen(x)).
 test(seno_impar) :- simplificar(sen(-x), -sen(x)).
 test(coseno_par) :- simplificar(cos(-2*x), cos(2*x)).
 test(sen_pi_sexto) :- simplificar(sen(pi/6), 1/2).
@@ -91,6 +101,15 @@ comprobar_simplificacion(X, F) :-
 test(senh_impar) :- simplificar(senh(-x), -senh(x)).
 test(cosh_par) :- simplificar(cosh(-x), cosh(x)).
 test(cosh_cero) :- simplificar(cosh(0)+senh(0), 1).
+test(tanh_cociente) :- simplificar(senh(x)/cosh(x), tanh(x)).
+test(coth_cociente) :- simplificar(cosh(x)/senh(x), coth(x)).
+test(sech_cociente) :- simplificar(1/cosh(x), sech(x)).
+test(csch_cociente) :- simplificar(1/senh(x), csch(x)).
+test(tanh_por_cosh) :- simplificar(tanh(x)*cosh(x), senh(x)).
+test(pitagorica_hiperbolica) :- simplificar(cosh(x)^2-senh(x)^2, 1).
+test(pitagorica_hiperbolica_con_factor) :-
+    simplificar(3*x*cosh(x)^2-3*x*senh(x)^2+1, 3*x+1).
+test(pitagorica_hiperbolica_negativa) :- simplificar(senh(x)^2-cosh(x)^2, -1).
 test(arcsen_exacto) :- simplificar(arcsen(1/2), pi/6).
 test(arccos_exacto) :- simplificar(arccos(-1/2), 2*pi/3).
 test(arctan_exacto) :- simplificar(arctan(1), pi/4).

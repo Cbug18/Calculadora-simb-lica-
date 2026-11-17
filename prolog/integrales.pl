@@ -6,6 +6,12 @@
 % Uso:  s(Var, Expresion, Integral)        (la constante C la agrega la UI)
 %   ?- s(x, 4*x^4 + sen(x), I).      I = 4/5*x^5+ -cos(x)
 % =====================================================================
+%**Integrantes:**
+%
+% Andrea Beatriz Orellana Jiménez 00106123
+% Pablo Enrique Vides Zavala 00080323
+% Raúl Napoleón Caprile Ramos 00006422
+% Alex Eduardo Ramirez Guevara 00009423
 
 :- ensure_loaded(utilidades).
 
@@ -92,6 +98,12 @@ s(Var, sec(Var), log(abs(sec(Var) + tan(Var)))):-
 s(Var, csc(Var), -log(abs(csc(Var) + cot(Var)))):-
     atomic(Var), !.
 
+s(Var, senh(Var), cosh(Var)):-
+    atomic(Var), !.
+
+s(Var, cosh(Var), senh(Var)):-
+    atomic(Var), !.
+
 s(Var, exp(Var), exp(Var)):-
     atomic(Var), !.
 
@@ -125,6 +137,24 @@ s(Var, F+G, SF+SG):-
 s(Var, F-G, SF-SG):-
     atomic(Var), s(Var, F, SF), s(Var, G, SG), !.
 
+
+% [AGREGADO] Fórmulas de reducción (integración por partes repetida),
+% con n entero positivo:
+%   ∫x^n sen x  dx = -x^n cos x  + n ∫x^(n-1) cos x  dx
+%   ∫x^n cos x  dx =  x^n sen x  - n ∫x^(n-1) sen x  dx
+%   ∫x^n senh x dx =  x^n cosh x - n ∫x^(n-1) cosh x dx
+%   ∫x^n cosh x dx =  x^n senh x - n ∫x^(n-1) senh x dx
+%   ∫x^n e^x    dx =  x^n e^x    - n ∫x^(n-1) e^x    dx
+% Sirve con la variable atómica o con una variable de Prolog.
+
+s(Var, Exp, I):-
+    potencia_por_funcion(Exp, Var, N, F), !,
+    reduccion(F, Var, N, I).
+
+% Con coeficiente: (K*x^n)*F(x), como lo escribe el parser para 3x²cos(x).
+s(Var, (K*P)*G, K*I):-
+    libre_de(K, Var), potencia_por_funcion(P*G, Var, N, F), !,
+    reduccion(F, Var, N, I).
 
 % INTEGRALES PARA EVALUACION:
 % (Var es una variable de Prolog sin ligar)
@@ -191,6 +221,12 @@ s(Var, sec(F), log(abs(sec(Var) + tan(Var)))):-
 s(Var, csc(F), -log(abs(csc(Var) + cot(Var)))):-
     var(Var), F == Var, !.
 
+s(Var, senh(F), cosh(Var)):-
+    var(Var), F == Var, !.
+
+s(Var, cosh(F), senh(Var)):-
+    var(Var), F == Var, !.
+
 s(Var, exp(F), exp(Var)):-
     var(Var), F == Var, !.
 
@@ -223,3 +259,55 @@ s(Var, F+G, SF+SG):-
 
 s(Var, F-G, SF-SG):-
     var(Var), s(Var, F, SF), s(Var, G, SG), !.
+
+
+% ---------------------------------------------------------------------
+% Auxiliares de las fórmulas de reducción
+% ---------------------------------------------------------------------
+
+% potencia_por_funcion(Exp, Var, N, F): Exp es Var^N * F(Var) (en
+% cualquier orden), con N entero positivo y F una función de la tabla.
+potencia_por_funcion(A*B, Var, N, F):-
+    (   potencia_de(A, Var, N), funcion_reducible(B, Var, F)
+    ;   potencia_de(B, Var, N), funcion_reducible(A, Var, F)
+    ), !.
+
+potencia_de(P, Var, 1):-
+    P == Var, !.
+potencia_de(P, Var, N):-
+    nonvar(P), P = B^N, B == Var, integer(N), N > 0.
+
+funcion_reducible(G, Var, F):-
+    nonvar(G), G =.. [Nombre, A], A == Var,
+    nombre_reducible(Nombre, F).
+
+nombre_reducible(sen, sen).
+nombre_reducible(sin, sen).
+nombre_reducible(cos, cos).
+nombre_reducible(senh, senh).
+nombre_reducible(sinh, senh).
+nombre_reducible(cosh, cosh).
+nombre_reducible(exp, exp).
+
+% primitiva(F, Signo, G): ∫F(x) dx = Signo * G(x).
+primitiva(sen,  -1, cos).
+primitiva(cos,   1, sen).
+primitiva(senh,  1, cosh).
+primitiva(cosh,  1, senh).
+primitiva(exp,   1, exp).
+
+% Caso base: n = 0, la integral elemental.
+reduccion(F, Var, 0, I):- !,
+    primitiva(F, Signo, G),
+    T =.. [G, Var],
+    ( Signo =:= 1 -> I = T ; I = -T ).
+
+% Paso recursivo: ∫x^n F = Signo*x^n*G - Signo*n*∫x^(n-1) G.
+reduccion(F, Var, N, I):-
+    N > 0,
+    primitiva(F, Signo, G),
+    T =.. [G, Var],
+    N1 is N - 1,
+    reduccion(G, Var, N1, R),
+    ( N =:= 1 -> XN = Var ; XN = Var^N ),
+    ( Signo =:= 1 -> I = XN*T - N*R ; I = -(XN*T) + N*R ).
