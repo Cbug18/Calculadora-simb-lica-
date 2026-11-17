@@ -475,6 +475,10 @@ valor_exacto(abs, A, V) :-
     constante(A, C), V is abs(C).
 valor_exacto(abs, A, A) :-
     nonvar(A), ( A = abs(_) ; A = exp(_) ; A == pi ; A == e ).
+valor_exacto(abs, A, A) :-
+    valor_numerico(A, V), V > 0.
+valor_exacto(abs, A, -A) :-
+    valor_numerico(A, V), V < 0.
 valor_exacto(Trig, A, V) :-
     angulo_pi(A, K),
     trig_exacto(Trig, K, V).

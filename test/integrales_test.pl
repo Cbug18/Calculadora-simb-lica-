@@ -31,4 +31,40 @@ comprobar_integral(X, F) :-
     X=1.3, Exacta is F,
     assertion(abs(Exacta-Aproximada) < 0.0001).
 
+% Integrales trigonométricas: la derivada numérica de la integral
+% tiene que dar la función original.
+test(tan) :- s(x, tan(x), I), assertion(I == -log(abs(cos(x)))).
+test(cot) :- s(x, cot(x), I), assertion(I == log(abs(sen(x)))).
+test(tan_variable_prolog) :-
+    s(X, tan(X), I), assertion(I == -log(abs(cos(X)))), assertion(var(X)).
+test(sec) :- s(x, sec(x), I), assertion(I == log(abs(sec(x)+tan(x)))).
+test(csc) :- s(x, csc(x), I), assertion(I == -log(abs(csc(x)+cot(x)))).
+test(trig_numerica) :-
+    forall(member(F, [tan(x), cot(x), sec(x), csc(x), 3*tan(x),
+                      tan(x)-cot(x), sec(x)+csc(x)/2]),
+           comprobar_trig(F)).
+
+comprobar_trig(F) :-
+    s(x, F, I),
+    en_x(I, 1.300001, I1), en_x(I, 1.299999, I2),
+    Aproximada is (I1-I2)/0.000002,
+    en_x(F, 1.3, Exacta),
+    assertion(abs(Exacta-Aproximada) < 0.0001).
+
+% en_x(Exp, Punto, V): valor de Exp con x = Punto (sen, sec, csc y cot
+% se pasan a sin y cos, que son los que entiende is/2).
+en_x(Exp, Punto, V) :- a_numero(Exp, Punto, A), V is A.
+
+a_numero(x, P, P) :- !.
+a_numero(E, _, E) :- atomic(E), !.
+a_numero(sen(A), P, sin(R)) :- !, a_numero(A, P, R).
+a_numero(sec(A), P, 1/cos(R)) :- !, a_numero(A, P, R).
+a_numero(csc(A), P, 1/sin(R)) :- !, a_numero(A, P, R).
+a_numero(cot(A), P, cos(R)/sin(R)) :- !, a_numero(A, P, R).
+a_numero(E, P, R) :-
+    E =.. [F|Args], a_numero_lista(Args, P, RArgs), R =.. [F|RArgs].
+
+a_numero_lista([], _, []).
+a_numero_lista([A|As], P, [B|Bs]) :- a_numero(A, P, B), a_numero_lista(As, P, Bs).
+
 :- end_tests(integrales).

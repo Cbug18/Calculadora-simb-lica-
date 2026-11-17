@@ -101,4 +101,8 @@ test(decimal_nuevas) :-
     valor_numerico(senh(1)+arctan(1/3), V),
     assertion(abs(V - (sinh(1)+atan(1/3))) < 1.0e-12).
 
+% Valor absoluto de constantes irracionales
+test(abs_irracional_positivo) :- simplificar(abs(sqrt(2)/2), sqrt(2)/2).
+test(abs_irracional_negativo) :- simplificar(abs(1-sqrt(2)), sqrt(2)-1).
+
 :- end_tests(simplificador).
