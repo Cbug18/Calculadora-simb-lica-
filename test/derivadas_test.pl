@@ -76,6 +76,10 @@ test(cadena_sec_csc_cot) :-
     d(x, sec(2*x) + csc(x^2) + cot(3*x), D),
     assertion(valor(x, D, 1.3,
         2*tan(2.6)/cos(2.6) - 2*1.3*cos(1.69)/sin(1.69)^2 - 3/sin(3.9)^2)).
+test(exponente_simbolico) :-
+    d(x, x^y, D), assertion(D == y*x^(y-1)).
+test(cadena_exponente_simbolico) :-
+    d(x, (x^2+1)^a, D), assertion(D == a*(x^2+1)^(a-1)*(2*x^1+0)).
 test(cadena_doble) :-
     d(x, sen(cos(x)), D),
     assertion(valor(x, D, 1.3, cos(cos(1.3))*(-sin(1.3)))).
@@ -138,9 +142,6 @@ sustituir_x(E, P, R) :-
 % ------------------------------------------------------------------
 
 
-
-test(exponente_simbolico, [fixme('falta x^y con exponente simbólico')]) :-
-    d(x, x^y, D), D == y*x^(y-1).
 test(evaluacion_constante, [fixme('las cláusulas para evaluación ligan la variable')]) :-
     d(X, 3*5, D), var(X), D == 0.
 test(coeficiente_simbolico_prolog, [fixme('K*X^N con K simbólico lanza un error de is/2')]) :-

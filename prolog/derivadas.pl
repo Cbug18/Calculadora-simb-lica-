@@ -51,6 +51,12 @@ d(Var, Var^N, N*Var^Nm1):-
     atomic(Var), number(N), is(Nm1, -(N, 1)), !.
 
 
+
+% [AGREGADO] Derivada de una variable elevada a un exponente simbólico
+
+d(Var, Var^N, N*Var^(N-1)):-
+    atomic(Var), libre_de(N, Var), !.
+
 % Derivada de una constante por una variable elevada a la N:
 
 d(Var, K*Var^N, C*Var^Nm1):-
@@ -138,6 +144,9 @@ d(Var, Exp, DExt*DU):-
 
 d(Var, U^N, N*U^Nm1*DU):-
     atomic(Var), number(N), is(Nm1, -(N, 1)), d(Var, U, DU), !.
+
+d(Var, U^N, N*U^(N-1)*DU):-
+    atomic(Var), libre_de(N, Var), d(Var, U, DU), !.
 
 % [AGREGADO] Regla del múltiplo constante: (K*F)' = K*F', (F*K)' = F'*K, (F/K)' = F'/K
 
