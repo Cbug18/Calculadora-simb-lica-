@@ -58,7 +58,7 @@ test(cero_anidado, [fail]) :- s(x, sen(1/0), _).
 % Fuera de la base de conocimiento.
 test(funcion_no_soportada, [fail]) :- s(x, desconocida(x), _).
 test(compuesta_no_soportada, [fail]) :- s(x, sen(2*x), _).
-test(producto_no_soportado, [fail]) :- s(x, x*sen(x), _).
+test(producto_no_soportado, [fail]) :- s(x, x*tan(x), _).
 test(variable_numerica, [fail]) :- s(2, x, _).
 
 % ------------------------------------------------------------------
@@ -138,6 +138,7 @@ en_x(Exp, Punto, V) :- a_numero(Exp, Punto, A), V is A.
 a_numero(x, P, P) :- !.
 a_numero(E, _, E) :- atomic(E), !.
 a_numero(sen(A), P, sin(R)) :- !, a_numero(A, P, R).
+a_numero(senh(A), P, sinh(R)) :- !, a_numero(A, P, R).
 a_numero(sec(A), P, 1/cos(R)) :- !, a_numero(A, P, R).
 a_numero(csc(A), P, 1/sin(R)) :- !, a_numero(A, P, R).
 a_numero(cot(A), P, cos(R)/sin(R)) :- !, a_numero(A, P, R).
@@ -146,5 +147,38 @@ a_numero(E, P, R) :-
 
 a_numero_lista([], _, []).
 a_numero_lista([A|As], P, [B|Bs]) :- a_numero(A, P, B), a_numero_lista(As, P, Bs).
+
+% ------------------------------------------------------------------
+% Fórmulas de reducción: ∫x^n f(x) dx con f = sen, cos, senh, cosh, exp
+% ------------------------------------------------------------------
+
+test(senh) :- s(x, senh(x), cosh(x)).
+test(cosh) :- s(x, cosh(x), senh(x)).
+test(reduccion_x_sen) :-
+    s(x, x*sen(x), I), assertion(I == -(x*cos(x))+1*sen(x)).
+test(reduccion_x_cos) :-
+    s(x, x*cos(x), I), assertion(I == x*sen(x)-1*(-cos(x))).
+test(reduccion_x2_sen) :-
+    s(x, x^2*sen(x), I),
+    assertion(I == -(x^2*cos(x))+2*(x*sen(x)-1*(-cos(x)))).
+test(reduccion_x_exp) :- s(x, x*exp(x), I), assertion(I == x*exp(x)-1*exp(x)).
+test(reduccion_orden_inverso) :-
+    s(x, sen(x)*x^2, I), s(x, x^2*sen(x), I2), assertion(I == I2).
+test(reduccion_sin) :- s(x, x*sin(x), I), s(x, x*sen(x), I2), assertion(I == I2).
+test(reduccion_coeficiente) :-
+    s(x, 3*x^2*cos(x), I), s(x, x^2*cos(x), I2), assertion(I == 3*I2).
+test(reduccion_prolog) :-
+    s(X, X*cos(X), I), assertion(I == X*sen(X)-1*(-cos(X))), assertion(var(X)).
+
+test(reduccion_verificacion_numerica) :-
+    forall(( member(G, [sen(x), sin(x), cos(x), senh(x), cosh(x), exp(x)]),
+             member(P, [x, x^2, x^3, x^5]),
+             member(F, [P*G, G*P, 4*P*G]) ),
+           comprobar_trig(F)).
+
+test(reduccion_exponente_negativo, [fail]) :- s(x, x^(-1)*sen(x), _).
+test(reduccion_exponente_fraccionario, [fail]) :- s(x, x^(1/2)*cos(x), _).
+test(reduccion_exponente_simbolico, [fail]) :- s(x, x^n*sen(x), _).
+test(reduccion_argumento_compuesto, [fail]) :- s(x, x^2*sen(2*x), _).
 
 :- end_tests(integrales).
